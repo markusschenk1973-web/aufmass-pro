@@ -127,6 +127,17 @@ textarea.inp{min-height:60px;resize:vertical}
 #lightbox img{max-width:95vw;max-height:80vh;border-radius:10px;object-fit:contain}
 #lightbox-close{margin-top:16px;padding:10px 24px;border-radius:10px;border:none;background:#222537;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
 
+
+/* Bluetooth */
+#bt-bar{position:fixed;top:0;left:0;right:0;z-index:999;padding:8px 14px;display:none;align-items:center;gap:10px;background:#1a1d2a;border-bottom:2px solid #3b82f6;font-size:13px}
+#bt-bar.open{display:flex}
+.bt-status{flex:1;font-weight:600;color:#dde2ec}
+.bt-val{font-size:18px;font-weight:900;color:#34d399;min-width:80px;text-align:right}
+.bt-btn{padding:7px 14px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer}
+#bt-connect-btn{background:#3b82f6;color:#fff}
+#bt-disconnect-btn{background:#ef444433;color:#ef4444;display:none}
+#bt-use-btn{background:#34d399;color:#0e1016;display:none}
+
 /* Bottom Nav */
 #bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#13161f;border-top:1px solid #222537;display:flex;z-index:200}
 .nav-btn{flex:1;padding:9px 4px 11px;border:none;background:transparent;color:#4a5568;cursor:pointer;border-top:2px solid transparent;font-size:10px;font-weight:500}
@@ -253,7 +264,18 @@ window.addEventListener('DOMContentLoaded', function() {
 </head>
 <body>
 
-<div id="header">
+
+<!-- Bluetooth Bar -->
+<div id="bt-bar">
+  <span style="font-size:18px">📡</span>
+  <div class="bt-status" id="bt-status-text">Nicht verbunden</div>
+  <div class="bt-val" id="bt-val-display"></div>
+  <button class="bt-btn" id="bt-use-btn" onclick="btUseValue()">↓ Übernehmen</button>
+  <button class="bt-btn" id="bt-disconnect-btn" onclick="btDisconnect()">✕</button>
+  <button class="bt-btn" id="bt-connect-btn" onclick="btConnect()">🔗 Verbinden</button>
+</div>
+
+<div id="bt-header-wrap"><div id="header">
   <h1 id="hdr-title">🧱 AufmaßPro</h1>
   <p id="hdr-sub">Trockenbau</p>
   <div id="progress">
@@ -517,7 +539,9 @@ function updateHeader() {
   const g = gewerk();
   const k = document.getElementById('inp-kunde').value;
   const a = document.getElementById('inp-adresse').value;
-  document.getElementById('hdr-title').textContent = (g?.icon||'') + ' AufmaßPro';
+  document.getElementById('hdr-title').innerHTML =
+    '<span>' + (g?.icon||'') + ' AufmaßPro</span>' +
+    '<button onclick="btToggleBar()" style="padding:5px 10px;border-radius:8px;border:none;background:#222537;color:#3b82f6;font-size:12px;font-weight:700;cursor:pointer" id="bt-header-btn">📡 BT</button>';
   document.getElementById('hdr-sub').textContent = (g?.label||'') + (k?' · '+k:'') + (a?' · '+a:'');
 }
 
@@ -1409,6 +1433,171 @@ function uebernehmeWert(raum, posId, quelleGewerk, quellePosId) {
   setPosData(raum, state.aktGewerk, posId, data);
   renderPosListe();
 }
+
+
+// ── Bluetooth Bosch GLM ────────────────────────────────────────────────────
+let btDevice = null;
+let btChar = null;
+let btLastValue = null;
+let btActiveInput = null; // Das aktuell fokussierte Eingabefeld
+
+// Bosch GLM MT-Protocol UUIDs
+const BT_SERVICE   = '0000fff0-0000-1000-8000-00805f9b34fb';
+const BT_WRITE     = '0000fff1-0000-1000-8000-00805f9b34fb';
+const BT_NOTIFY    = '0000fff2-0000-1000-8000-00805f9b34fb';
+
+// Alternative UUIDs für GLM 100C / 120C
+const BT_SERVICE2  = '00001101-0000-1000-8000-00805f9b34fb';
+
+function btToggleBar() {
+  const bar = document.getElementById('bt-bar');
+  bar.classList.toggle('open');
+  // Header padding anpassen
+  document.getElementById('header').style.marginTop = bar.classList.contains('open') ? '48px' : '0';
+}
+
+async function btConnect() {
+  try {
+    document.getElementById('bt-status-text').textContent = 'Suche Gerät...';
+    btDevice = await navigator.bluetooth.requestDevice({
+      filters: [
+        { namePrefix: 'GLM' },
+        { namePrefix: 'Bosch' },
+      ],
+      optionalServices: [
+        '0000ffe0-0000-1000-8000-00805f9b34fb',
+        '0000fff0-0000-1000-8000-00805f9b34fb',
+        '00001101-0000-1000-8000-00805f9b34fb',
+        'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+        'c7e70001-c847-11e6-8175-8c89a55d89f3',
+        '00005301-0000-0041-5253-534643424c45',
+      ]
+    });
+
+    document.getElementById('bt-status-text').textContent = 'Verbinde...';
+    const server = await btDevice.gatt.connect();
+
+    // Services durchsuchen
+    const services = await server.getPrimaryServices();
+    let notifyChar = null;
+    let writeChar = null;
+
+    for (const service of services) {
+      try {
+        const chars = await service.getCharacteristics();
+        for (const ch of chars) {
+          if (ch.properties.notify || ch.properties.indicate) notifyChar = ch;
+          if (ch.properties.write || ch.properties.writeWithoutResponse) writeChar = ch;
+        }
+      } catch(e) {}
+    }
+
+    if (notifyChar) {
+      await notifyChar.startNotifications();
+      notifyChar.addEventListener('characteristicvaluechanged', btOnData);
+      btChar = writeChar;
+
+      document.getElementById('bt-status-text').textContent = '✅ ' + (btDevice.name||'GLM') + ' verbunden';
+      document.getElementById('bt-connect-btn').style.display = 'none';
+      document.getElementById('bt-disconnect-btn').style.display = 'block';
+
+      // Messung anfordern
+      if (writeChar) {
+        try {
+          // Bosch MT-Protocol: Single Distance Measurement
+          const cmd = new Uint8Array([0xc0, 0x05, 0x01, 0x00, 0xc4]);
+          await writeChar.writeValue(cmd);
+        } catch(e) {}
+      }
+    } else {
+      document.getElementById('bt-status-text').textContent = '⚠️ Keine Messdaten gefunden';
+    }
+
+    btDevice.addEventListener('gattserverdisconnected', () => {
+      document.getElementById('bt-status-text').textContent = 'Verbindung getrennt';
+      document.getElementById('bt-connect-btn').style.display = 'block';
+      document.getElementById('bt-disconnect-btn').style.display = 'none';
+      document.getElementById('bt-use-btn').style.display = 'none';
+    });
+
+  } catch(e) {
+    if (e.name !== 'NotFoundError') {
+      document.getElementById('bt-status-text').textContent = '❌ Fehler: ' + e.message;
+    } else {
+      document.getElementById('bt-status-text').textContent = 'Abgebrochen';
+    }
+  }
+}
+
+function btOnData(event) {
+  const value = event.target.value;
+  const bytes = new Uint8Array(value.buffer);
+
+  // Versuche Messwert aus den Bytes zu lesen
+  // Bosch MT-Protocol: Messwert als Float32 in mm
+  let meter = null;
+  for (let i = 0; i <= bytes.length - 4; i++) {
+    const view = new DataView(value.buffer, i, 4);
+    const val = view.getFloat32(0, true); // little-endian
+    if (val > 0.01 && val < 999) {
+      meter = Math.round(val * 1000) / 1000; // in Meter
+      break;
+    }
+    const valBE = view.getFloat32(0, false); // big-endian
+    if (valBE > 0.01 && valBE < 999) {
+      meter = Math.round(valBE * 1000) / 1000;
+      break;
+    }
+  }
+
+  if (meter !== null) {
+    btLastValue = meter;
+    const display = meter.toFixed(3).replace('.', ',') + ' m';
+    document.getElementById('bt-val-display').textContent = display;
+    document.getElementById('bt-use-btn').style.display = 'block';
+    document.getElementById('bt-status-text').textContent = '📏 Messung:';
+  }
+}
+
+function btUseValue() {
+  if (btLastValue === null) return;
+  // Wert in das aktive/letzte Eingabefeld eintragen
+  const inputs = document.querySelectorAll('.sm-inp:focus, .sm-inp');
+  const target = btActiveInput || (inputs.length > 0 ? inputs[0] : null);
+  if (target) {
+    target.value = String(btLastValue).replace('.', ',');
+    target.dispatchEvent(new Event('input'));
+    target.focus();
+    document.getElementById('bt-status-text').textContent = '✅ Wert übernommen!';
+    setTimeout(() => {
+      document.getElementById('bt-status-text').textContent = '✅ ' + (btDevice?.name||'GLM') + ' verbunden';
+    }, 2000);
+  }
+}
+
+function btDisconnect() {
+  if (btDevice && btDevice.gatt.connected) btDevice.gatt.disconnect();
+  btDevice = null; btChar = null; btLastValue = null;
+  document.getElementById('bt-status-text').textContent = 'Getrennt';
+  document.getElementById('bt-connect-btn').style.display = 'block';
+  document.getElementById('bt-disconnect-btn').style.display = 'none';
+  document.getElementById('bt-use-btn').style.display = 'none';
+  document.getElementById('bt-val-display').textContent = '';
+}
+
+// Aktives Eingabefeld verfolgen
+document.addEventListener('focusin', e => {
+  if (e.target.classList.contains('sm-inp')) {
+    btActiveInput = e.target;
+    // Neue Messung anfordern wenn verbunden
+    if (btChar) {
+      try {
+        const cmd = new Uint8Array([0xc0, 0x05, 0x01, 0x00, 0xc4]);
+        btChar.writeValue(cmd).catch(()=>{});
+      } catch(e) {}
+    }
+  }
+});
 
 // ── Init ───────────────────────────────────────────────────────────────────
 setAccent(GEWERKE[0].color);
