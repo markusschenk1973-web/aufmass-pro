@@ -1285,17 +1285,8 @@ function exportPDF() {
     + '.pos-row{display:flex;justify-content:space-between;padding:4px 8px;font-size:13px;border-bottom:1px solid #eee}'
     + '.notiz{padding:4px 8px;font-size:12px;color:#666;font-style:italic}'
     + '.gesamt{display:flex;justify-content:space-between;padding:8px;background:#f0f0f0;border-radius:6px;font-weight:900;font-size:15px;margin-top:8px}'
-    + '@media print{button{display:none}}'
-    + '</style>'
-    + '
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  });
-}
-</script>
-</head><body>'
+        + '@media print{button{display:none}}'
+    + '</style></head><body>'
     + '<h1>&#128208; AufmassPro</h1>'
     + '<div class="info">'
     + '<div><strong>Kunde:</strong> ' + k + '</div>'
@@ -1304,7 +1295,7 @@ if ('serviceWorker' in navigator) {
     + '<div><strong>Raeume:</strong> ' + state.raeume.length + '</div>'
     + '</div>'
     + allHtml
-    + '<br><button onclick="window.print()" style="margin-top:16px;padding:12px 24px;background:#000;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">🖨️ PDF speichern / Drucken</button>'
+    + '<br><button onclick="window.print()" style="margin-top:16px;padding:12px 24px;background:#000;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">&#128424;&#65039; PDF speichern / Drucken</button>'
     + '</body></html>';
   win.document.write(html);
   win.document.close();
