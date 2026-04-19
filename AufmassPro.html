@@ -1459,18 +1459,20 @@ function btToggleBar() {
 async function btConnect() {
   try {
     document.getElementById('bt-status-text').textContent = 'Suche Gerät...';
+    // Bosch GLM 100C / 120C: acceptAllDevices + optionalServices
     btDevice = await navigator.bluetooth.requestDevice({
-      filters: [
-        { namePrefix: 'GLM' },
-        { namePrefix: 'Bosch' },
-      ],
+      acceptAllDevices: true,
       optionalServices: [
         '0000ffe0-0000-1000-8000-00805f9b34fb',
         '0000fff0-0000-1000-8000-00805f9b34fb',
+        '0000ffe1-0000-1000-8000-00805f9b34fb',
+        '0000fff1-0000-1000-8000-00805f9b34fb',
+        '0000fff2-0000-1000-8000-00805f9b34fb',
         '00001101-0000-1000-8000-00805f9b34fb',
         'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
         'c7e70001-c847-11e6-8175-8c89a55d89f3',
         '00005301-0000-0041-5253-534643424c45',
+        '3ab10100-f831-4395-b29d-570977d5bf94',
       ]
     });
 
