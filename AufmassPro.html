@@ -133,15 +133,6 @@ textarea.inp{min-height:60px;resize:vertical}
 #lightbox-close{margin-top:16px;padding:10px 24px;border-radius:10px;border:none;background:#222537;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
 
 
-/* Bluetooth */
-#bt-bar{position:fixed;top:0;left:0;right:0;z-index:999;padding:8px 14px;display:none;align-items:center;gap:10px;background:#1a1d2a;border-bottom:2px solid #3b82f6;font-size:13px}
-#bt-bar.open{display:flex}
-.bt-status{flex:1;font-weight:600;color:#dde2ec}
-.bt-val{font-size:18px;font-weight:900;color:#34d399;min-width:80px;text-align:right}
-.bt-btn{padding:7px 14px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer}
-#bt-connect-btn{background:#3b82f6;color:#fff}
-#bt-disconnect-btn{background:#ef444433;color:#ef4444;display:none}
-#bt-use-btn{background:#34d399;color:#0e1016;display:none}
 
 /* Bottom Nav */
 #bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#13161f;border-top:1px solid #222537;display:flex;z-index:200}
@@ -167,105 +158,6 @@ textarea.inp{min-height:60px;resize:vertical}
 .gewerk-tab{padding:6px 13px;border-radius:8px;border:1.5px solid #222537;background:#181b26;color:#4a5568;font-weight:700;font-size:13px;cursor:pointer}
 </style>
 
-<link rel="manifest" href="#" id="manifest-placeholder">
-<link rel="apple-touch-icon" id="apple-icon">
-<script>
-// Generate icon via canvas and inject as manifest + apple-touch-icon
-function generateIcon() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512; canvas.height = 512;
-  const ctx = canvas.getContext('2d');
-
-  // Background
-  const grad = ctx.createLinearGradient(0,0,512,512);
-  grad.addColorStop(0,'#1a1d2a');
-  grad.addColorStop(1,'#0e1016');
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.roundRect(0,0,512,512,80);
-  ctx.fill();
-
-  // Orange accent circle glow
-  ctx.beginPath();
-  ctx.arc(256,220,160,0,Math.PI*2);
-  ctx.fillStyle = 'rgba(245,158,11,0.08)';
-  ctx.fill();
-
-  // Draw ruler / measuring icon
-  ctx.strokeStyle = '#f59e0b';
-  ctx.lineWidth = 22;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
-  // Main ruler body
-  ctx.beginPath();
-  ctx.moveTo(100,310);
-  ctx.lineTo(412,310);
-  ctx.stroke();
-
-  // Ruler ticks
-  const ticks = [100,160,220,280,340,400,412];
-  ticks.forEach((x,i) => {
-    ctx.beginPath();
-    ctx.moveTo(x, 310);
-    ctx.lineTo(x, i===0||i===ticks.length-1 ? 250 : 270);
-    ctx.lineWidth = i===0||i===ticks.length-1 ? 18 : 12;
-    ctx.stroke();
-  });
-
-  // Triangle / arrow pointing down
-  ctx.fillStyle = '#f59e0b';
-  ctx.beginPath();
-  ctx.moveTo(256, 175);
-  ctx.lineTo(226, 230);
-  ctx.lineTo(286, 230);
-  ctx.closePath();
-  ctx.fill();
-
-  // Vertical measurement line
-  ctx.strokeStyle = '#34d399';
-  ctx.lineWidth = 14;
-  ctx.setLineDash([12,8]);
-  ctx.beginPath();
-  ctx.moveTo(256,240);
-  ctx.lineTo(256,308);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Text
-  ctx.fillStyle = '#f59e0b';
-  ctx.font = 'bold 52px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('AufmaßPro', 256, 400);
-
-  return canvas.toDataURL('image/png');
-}
-
-window.addEventListener('DOMContentLoaded', function() {
-  const iconUrl = generateIcon();
-
-  // Apple touch icon
-  document.getElementById('apple-icon').href = iconUrl;
-
-  // Web app manifest with icon
-  const manifest = {
-    name: 'AufmaßPro',
-    short_name: 'AufmaßPro',
-    description: 'Professionelle Aufmaß-App für Handwerker',
-    start_url: '.',
-    display: 'standalone',
-    background_color: '#0e1016',
-    theme_color: '#f59e0b',
-    icons: [
-      { src: iconUrl, sizes: '512x512', type: 'image/png' },
-      { src: iconUrl, sizes: '192x192', type: 'image/png' }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  document.getElementById('manifest-placeholder').href = url;
-});
-</script>
 
 <script>
 if ('serviceWorker' in navigator) {
@@ -273,20 +165,9 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(()=>{});
   });
 }
-</script>
-</head>
+</script></head>
 <body>
 
-
-<!-- Bluetooth Bar -->
-<div id="bt-bar">
-  <span style="font-size:18px">📡</span>
-  <div class="bt-status" id="bt-status-text">Nicht verbunden</div>
-  <div class="bt-val" id="bt-val-display"></div>
-  <button class="bt-btn" id="bt-use-btn" onclick="btUseValue()">↓ Übernehmen</button>
-  <button class="bt-btn" id="bt-disconnect-btn" onclick="btDisconnect()">✕</button>
-  <button class="bt-btn" id="bt-connect-btn" onclick="btConnect()">🔗 Verbinden</button>
-</div>
 
 <div id="header">
   <h1 id="hdr-title">🧱 AufmaßPro</h1>
@@ -551,9 +432,7 @@ function updateHeader() {
   const g = gewerk();
   const k = document.getElementById('inp-kunde').value;
   const a = document.getElementById('inp-adresse').value;
-  document.getElementById('hdr-title').innerHTML =
-    '<span>' + (g?.icon||'') + ' AufmaßPro</span>' +
-    '<button onclick="btToggleBar()" style="padding:5px 10px;border-radius:8px;border:none;background:#222537;color:#3b82f6;font-size:12px;font-weight:700;cursor:pointer" id="bt-header-btn">📡 BT</button>';
+  document.getElementById('hdr-title').textContent = (g?.icon||'') + ' AufmaßPro';
   document.getElementById('hdr-sub').textContent = (g?.label||'') + (k?' · '+k:'') + (a?' · '+a:'');
 }
 
@@ -1446,171 +1325,6 @@ function uebernehmeWert(raum, posId, quelleGewerk, quellePosId) {
 }
 
 
-// ── Bluetooth Bosch GLM ────────────────────────────────────────────────────
-let btDevice = null;
-let btChar = null;
-let btLastValue = null;
-let btActiveInput = null; // Das aktuell fokussierte Eingabefeld
-
-// Bosch GLM MT-Protocol UUIDs
-const BT_SERVICE   = '0000fff0-0000-1000-8000-00805f9b34fb';
-const BT_WRITE     = '0000fff1-0000-1000-8000-00805f9b34fb';
-const BT_NOTIFY    = '0000fff2-0000-1000-8000-00805f9b34fb';
-
-// Alternative UUIDs für GLM 100C / 120C
-const BT_SERVICE2  = '00001101-0000-1000-8000-00805f9b34fb';
-
-function btToggleBar() {
-  const bar = document.getElementById('bt-bar');
-  bar.classList.toggle('open');
-  // Header padding anpassen
-  document.getElementById('header').style.marginTop = bar.classList.contains('open') ? '48px' : '0';
-}
-
-async function btConnect() {
-  try {
-    document.getElementById('bt-status-text').textContent = 'Suche Gerät...';
-    // Bosch GLM 100C / 120C: acceptAllDevices + optionalServices
-    btDevice = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: [
-        '0000ffe0-0000-1000-8000-00805f9b34fb',
-        '0000fff0-0000-1000-8000-00805f9b34fb',
-        '0000ffe1-0000-1000-8000-00805f9b34fb',
-        '0000fff1-0000-1000-8000-00805f9b34fb',
-        '0000fff2-0000-1000-8000-00805f9b34fb',
-        '00001101-0000-1000-8000-00805f9b34fb',
-        'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
-        'c7e70001-c847-11e6-8175-8c89a55d89f3',
-        '00005301-0000-0041-5253-534643424c45',
-        '3ab10100-f831-4395-b29d-570977d5bf94',
-      ]
-    });
-
-    document.getElementById('bt-status-text').textContent = 'Verbinde...';
-    const server = await btDevice.gatt.connect();
-
-    // Services durchsuchen
-    const services = await server.getPrimaryServices();
-    let notifyChar = null;
-    let writeChar = null;
-
-    for (const service of services) {
-      try {
-        const chars = await service.getCharacteristics();
-        for (const ch of chars) {
-          if (ch.properties.notify || ch.properties.indicate) notifyChar = ch;
-          if (ch.properties.write || ch.properties.writeWithoutResponse) writeChar = ch;
-        }
-      } catch(e) {}
-    }
-
-    if (notifyChar) {
-      await notifyChar.startNotifications();
-      notifyChar.addEventListener('characteristicvaluechanged', btOnData);
-      btChar = writeChar;
-
-      document.getElementById('bt-status-text').textContent = '✅ ' + (btDevice.name||'GLM') + ' verbunden';
-      document.getElementById('bt-connect-btn').style.display = 'none';
-      document.getElementById('bt-disconnect-btn').style.display = 'block';
-
-      // Messung anfordern
-      if (writeChar) {
-        try {
-          // Bosch MT-Protocol: Single Distance Measurement
-          const cmd = new Uint8Array([0xc0, 0x05, 0x01, 0x00, 0xc4]);
-          await writeChar.writeValue(cmd);
-        } catch(e) {}
-      }
-    } else {
-      document.getElementById('bt-status-text').textContent = '⚠️ Keine Messdaten gefunden';
-    }
-
-    btDevice.addEventListener('gattserverdisconnected', () => {
-      document.getElementById('bt-status-text').textContent = 'Verbindung getrennt';
-      document.getElementById('bt-connect-btn').style.display = 'block';
-      document.getElementById('bt-disconnect-btn').style.display = 'none';
-      document.getElementById('bt-use-btn').style.display = 'none';
-    });
-
-  } catch(e) {
-    if (e.name !== 'NotFoundError') {
-      document.getElementById('bt-status-text').textContent = '❌ Fehler: ' + e.message;
-    } else {
-      document.getElementById('bt-status-text').textContent = 'Abgebrochen';
-    }
-  }
-}
-
-function btOnData(event) {
-  const value = event.target.value;
-  const bytes = new Uint8Array(value.buffer);
-
-  // Versuche Messwert aus den Bytes zu lesen
-  // Bosch MT-Protocol: Messwert als Float32 in mm
-  let meter = null;
-  for (let i = 0; i <= bytes.length - 4; i++) {
-    const view = new DataView(value.buffer, i, 4);
-    const val = view.getFloat32(0, true); // little-endian
-    if (val > 0.01 && val < 999) {
-      meter = Math.round(val * 1000) / 1000; // in Meter
-      break;
-    }
-    const valBE = view.getFloat32(0, false); // big-endian
-    if (valBE > 0.01 && valBE < 999) {
-      meter = Math.round(valBE * 1000) / 1000;
-      break;
-    }
-  }
-
-  if (meter !== null) {
-    btLastValue = meter;
-    const display = meter.toFixed(3).replace('.', ',') + ' m';
-    document.getElementById('bt-val-display').textContent = display;
-    document.getElementById('bt-use-btn').style.display = 'block';
-    document.getElementById('bt-status-text').textContent = '📏 Messung:';
-  }
-}
-
-function btUseValue() {
-  if (btLastValue === null) return;
-  // Wert in das aktive/letzte Eingabefeld eintragen
-  const inputs = document.querySelectorAll('.sm-inp:focus, .sm-inp');
-  const target = btActiveInput || (inputs.length > 0 ? inputs[0] : null);
-  if (target) {
-    target.value = String(btLastValue).replace('.', ',');
-    target.dispatchEvent(new Event('input'));
-    target.focus();
-    document.getElementById('bt-status-text').textContent = '✅ Wert übernommen!';
-    setTimeout(() => {
-      document.getElementById('bt-status-text').textContent = '✅ ' + (btDevice?.name||'GLM') + ' verbunden';
-    }, 2000);
-  }
-}
-
-function btDisconnect() {
-  if (btDevice && btDevice.gatt.connected) btDevice.gatt.disconnect();
-  btDevice = null; btChar = null; btLastValue = null;
-  document.getElementById('bt-status-text').textContent = 'Getrennt';
-  document.getElementById('bt-connect-btn').style.display = 'block';
-  document.getElementById('bt-disconnect-btn').style.display = 'none';
-  document.getElementById('bt-use-btn').style.display = 'none';
-  document.getElementById('bt-val-display').textContent = '';
-}
-
-// Aktives Eingabefeld verfolgen
-document.addEventListener('focusin', e => {
-  if (e.target.classList.contains('sm-inp')) {
-    btActiveInput = e.target;
-    // Neue Messung anfordern wenn verbunden
-    if (btChar) {
-      try {
-        const cmd = new Uint8Array([0xc0, 0x05, 0x01, 0x00, 0xc4]);
-        btChar.writeValue(cmd).catch(()=>{});
-      } catch(e) {}
-    }
-  }
-});
 
 // ── Init ───────────────────────────────────────────────────────────────────
 setAccent(GEWERKE[0].color);
