@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <meta name="theme-color" content="#0e1016"/>
+<link rel="manifest" href="./manifest.json">
 <title>AufmaßPro</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
@@ -260,6 +261,14 @@ window.addEventListener('DOMContentLoaded', function() {
   const url = URL.createObjectURL(blob);
   document.getElementById('manifest-placeholder').href = url;
 });
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
 </script>
 </head>
 <body>
@@ -1274,7 +1283,15 @@ function exportPDF() {
     + '.gesamt{display:flex;justify-content:space-between;padding:8px;background:#f0f0f0;border-radius:6px;font-weight:900;font-size:15px;margin-top:8px}'
     + '@media print{button{display:none}}'
     + '</style>'
-    + '</head><body>'
+    + '
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+</script>
+</head><body>'
     + '<h1>&#128208; AufmassPro</h1>'
     + '<div class="info">'
     + '<div><strong>Kunde:</strong> ' + k + '</div>'
