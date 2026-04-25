@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="AufmaßPro">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="theme-color" content="#0e1016"/>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+<title>AufmaßPro</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{background:#0e1016;color:#dde2ec;font-family:system-ui,sans-serif;padding-bottom:80px}
+button,input,textarea,select{font-family:inherit}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+
+/* Header */
+#header{background:#13161f;border-bottom:1px solid #222537;padding:14px 16px 10px;position:sticky;top:0;z-index:100}
+#header h1{font-size:19px;font-weight:900;color:var(--accent,#3b82f6);margin:0}
+#header p{font-size:12px;color:#4a5568;margin:3px 0 0}
+#progress{display:flex;gap:5px;margin-top:10px}
+.pbar{flex:1;height:3px;border-radius:2px;background:#222537;transition:background .3s}
+.pbar.done{background:var(--accent,#3b82f6)}
+.pbar.active{background:color-mix(in srgb,var(--accent,#3b82f6) 55%,transparent)}
+
+/* Sections */
+.sec{padding:16px 16px 0;display:none}
+.sec.active{display:block}
+.lbl{font-size:11px;font-weight:700;color:#4a5568;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:8px}
+
+/* Inputs */
+.inp{width:100%;background:#181b26;border:1.5px solid #222537;border-radius:10px;padding:12px 14px;color:#dde2ec;font-size:15px;outline:none}
+.inp:focus{border-color:var(--accent,#3b82f6)}
+.sm-inp{width:100%;background:#0b0d14;border:1.5px solid #222537;border-radius:8px;padding:11px 12px;color:#dde2ec;font-size:16px;outline:none}
+.sm-inp:focus{border-color:var(--accent,#3b82f6)}
+textarea.inp{min-height:60px;resize:vertical}
+
+/* Buttons */
+.btn{padding:12px 20px;border-radius:10px;border:none;font-weight:700;font-size:15px;cursor:pointer;background:var(--accent,#3b82f6);color:#0e1016}
+.btn-g{background:transparent;border:1.5px solid #222537;color:#dde2ec}
+.btn-sm{padding:7px 13px;font-size:13px}
+.btn-ok{padding:11px 18px;border-radius:8px;border:none;background:var(--accent,#3b82f6);color:#0e1016;font-weight:800;font-size:15px;cursor:pointer;flex-shrink:0}
+.btn:disabled{opacity:.4}
+.btn-block{width:100%;margin-bottom:8px}
+
+/* Cards */
+.card{background:#181b26;border:1px solid #222537;border-radius:13px;padding:13px 15px;margin-bottom:10px}
+
+/* Objekttyp Grid */
+.obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.obj-btn{padding:16px 10px;border-radius:12px;border:2px solid #222537;background:#181b26;color:#dde2ec;font-weight:700;font-size:14px;cursor:pointer;text-align:center}
+.obj-btn.active{border-color:var(--accent,#3b82f6);background:color-mix(in srgb,var(--accent,#3b82f6) 15%,transparent);color:var(--accent,#3b82f6)}
+.obj-icon{font-size:24px;display:block;margin-bottom:6px}
+
+/* Räume */
+.raum-btn{padding:12px 16px;border-radius:11px;margin-bottom:8px;width:100%;border:1.5px solid #222537;background:#181b26;color:#dde2ec;font-weight:500;font-size:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.raum-btn.active{border-color:var(--accent,#3b82f6);background:color-mix(in srgb,var(--accent,#3b82f6) 15%,transparent);color:var(--accent,#3b82f6);font-weight:700}
+
+/* Chips / Badges */
+.chip-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{padding:7px 12px;border-radius:8px;border:1.5px solid #222537;background:transparent;color:#dde2ec;font-size:13px;cursor:pointer}
+.badge{border-radius:6px;padding:2px 9px;font-size:12px;font-weight:700}
+
+/* Positions-Karte */
+.pos-card{border:1.5px solid #222537;border-radius:12px;padding:12px 13px;margin-bottom:8px;background:#12141c}
+.pos-card.active{border-color:var(--accent,#3b82f6);background:color-mix(in srgb,var(--accent,#3b82f6) 8%,#12141c)}
+.pos-header{display:flex;align-items:center;gap:11px}
+.chk{width:24px;height:24px;border-radius:7px;border:2px solid #222537;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px;font-weight:900}
+.chk.active{background:var(--accent,#3b82f6);border-color:var(--accent,#3b82f6);color:#0e1016}
+.pos-felder{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.feld-row{display:flex;flex-direction:column;gap:6px}
+.feld-inp-row{display:flex;gap:8px;align-items:center}
+.result-box{margin-top:10px;background:#0b0d14;border-radius:10px;padding:10px 14px;display:flex;gap:16px}
+.result-col{flex:1;text-align:center}
+.result-divider{width:1px;background:#222537}
+.result-label{font-size:11px;color:#4a5568;text-transform:uppercase}
+.result-val{font-size:18px;font-weight:900;margin-top:3px}
+
+/* Gewerk Add Button */
+.add-pos-btn{width:100%;padding:12px;border-radius:12px;border:2px dashed;font-weight:700;font-size:15px;cursor:pointer;margin-top:4px;background:transparent}
+
+
+/* Ordner / Startseite */
+#s0{padding:16px 16px 0;display:none}
+#s0.active{display:block}
+.aufmass-item{background:#181b26;border:1.5px solid #222537;border-radius:13px;padding:14px 15px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.aufmass-item:active{opacity:.7}
+.aufmass-item-info{flex:1;min-width:0}
+.aufmass-item-title{font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aufmass-item-sub{font-size:12px;color:#4a5568;margin-top:3px}
+.aufmass-item-del{padding:8px 12px;border-radius:8px;border:none;background:#ef444422;color:#ef4444;font-weight:700;font-size:18px;cursor:pointer;flex-shrink:0}
+.empty-state{text-align:center;padding:40px 20px;color:#4a5568}
+.empty-icon{font-size:48px;display:block;margin-bottom:12px}
+
+
+/* PDF Print */
+@media print {
+  #header, #bottom-nav, .no-print { display:none !important; }
+  body { background:#fff !important; color:#000 !important; padding:0 !important; }
+  .sec { display:block !important; padding:0 !important; }
+  #s1,#s2,#s3,#s0 { display:none !important; }
+  #s4 { display:block !important; }
+  .sum-raum { border:1px solid #ccc !important; background:#fff !important; break-inside:avoid; }
+  .sum-header { background:#f5f5f5 !important; color:#000 !important; }
+  .sum-row { border-color:#eee !important; color:#000 !important; }
+  .sum-row span { color:#333 !important; }
+  .total-box { border:2px solid #333 !important; background:#f9f9f9 !important; }
+  .gewerk-tabs, .btn, .btn-g, .btn-sm { display:none !important; }
+  .sum-info-print { display:block !important; }
+  #pdf-header { display:block !important; }
+}
+#pdf-header { display:none; padding:0 0 16px; border-bottom:2px solid #222537; margin-bottom:16px; }
+
+
+/* Fotos */
+.foto-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.foto-thumb{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1.5px solid #222537;cursor:pointer}
+.foto-del{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.foto-wrap{position:relative;display:inline-block}
+.foto-btns{display:flex;gap:8px;margin-top:8px}
+.foto-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid #222537;background:transparent;color:#dde2ec;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
+
+/* Lightbox */
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:600;display:none;align-items:center;justify-content:center;flex-direction:column}
+#lightbox.open{display:flex}
+#lightbox img{max-width:95vw;max-height:80vh;border-radius:10px;object-fit:contain}
+#lightbox-close{margin-top:16px;padding:10px 24px;border-radius:10px;border:none;background:#222537;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+
+
+
+
+/* Spracheingabe */
+.mic-btn{padding:11px 14px;border-radius:8px;border:none;background:#222537;color:#dde2ec;font-size:18px;cursor:pointer;flex-shrink:0;transition:background .2s}
+.mic-btn.listening{background:#ef4444;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* Bottom Nav */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#13161f;border-top:1px solid #222537;display:flex;z-index:200}
+.nav-btn{flex:1;padding:9px 4px 11px;border:none;background:transparent;color:#4a5568;cursor:pointer;border-top:2px solid transparent;font-size:10px;font-weight:500}
+.nav-btn.active{border-top-color:var(--accent,#3b82f6);color:var(--accent,#3b82f6);font-weight:700}
+.nav-icon{font-size:19px;display:block;margin-bottom:2px}
+
+/* Modal */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:flex-end}
+#modal-overlay.open{display:flex}
+#modal{background:#1a1d2a;border-radius:18px 18px 0 0;padding:20px 16px 32px;width:100%;border-top:2px solid var(--accent,#3b82f6)}
+.calc-btn{padding:10px 14px;border-radius:10px;border:1.5px solid #222537;background:transparent;color:#dde2ec;font-weight:600;font-size:14px;cursor:pointer;text-align:left;width:100%;margin-bottom:8px}
+.calc-btn.active{border-color:var(--accent,#3b82f6);background:color-mix(in srgb,var(--accent,#3b82f6) 15%,transparent);color:var(--accent,#3b82f6)}
+.einheit-btn{padding:6px 14px;border-radius:8px;border:1.5px solid #222537;background:transparent;color:#4a5568;font-weight:700;font-size:14px;cursor:pointer}
+.einheit-btn.active{border-color:var(--accent,#3b82f6);background:color-mix(in srgb,var(--accent,#3b82f6) 20%,transparent);color:var(--accent,#3b82f6)}
+
+/* Summary */
+.sum-raum{background:#181b26;border:1px solid #222537;border-radius:13px;margin-bottom:12px;overflow:hidden}
+.sum-header{padding:11px 15px;border-bottom:1px solid #222537;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+.sum-row{padding:9px 15px;border-bottom:1px solid #222537;display:flex;justify-content:space-between;font-size:14px}
+.total-box{border:2px solid var(--accent,#3b82f6);border-radius:13px;padding:15px 18px;margin-top:16px;background:color-mix(in srgb,var(--accent,#3b82f6) 10%,transparent)}
+.gewerk-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.gewerk-tab{padding:6px 13px;border-radius:8px;border:1.5px solid #222537;background:#181b26;color:#4a5568;font-weight:700;font-size:13px;cursor:pointer}
+</style>
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+</script></head>
+<body>
+
+
+<div id="header">
+  <h1 id="hdr-title">🧱 AufmaßPro</h1>
+  <p id="hdr-sub">Trockenbau</p>
+  <div id="progress">
+    <div class="pbar active" id="p1"></div>
+    <div class="pbar" id="p2"></div>
+    <div class="pbar" id="p3"></div>
+    <div class="pbar" id="p4"></div>
+  </div>
+</div>
+
+<!-- SCHRITT 0: Aufmaß-Ordner -->
+<div class="sec" id="s0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <span class="lbl" style="margin:0">📁 MEINE AUFMASSE</span>
+  </div>
+  <div id="aufmass-list"></div>
+  <button class="btn btn-block" style="margin-top:8px" onclick="neuesAufmass()">➕ Neues Aufmaß erstellen</button>
+</div>
+
+<!-- SCHRITT 1 -->
+<div class="sec active" id="s1">
+  <span class="lbl">Kundendaten</span>
+  <div style="display:flex;gap:8px;margin-bottom:10px">
+    <input class="inp" id="inp-kunde" placeholder="Kundenname" style="flex:1;margin-bottom:0" oninput="updateHeader()">
+    <button style="flex:0 0 56px;height:50px;font-size:13px;font-weight:700;border-radius:10px;border:2px solid #4a5568;background:#222537;color:#dde2ec;cursor:pointer"
+      onclick="startSpracheText(document.getElementById('inp-kunde'))">MIC</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:20px">
+    <input class="inp" id="inp-adresse" placeholder="Adresse / Objekt" style="flex:1;margin-bottom:0" oninput="updateHeader()">
+    <button style="flex:0 0 56px;height:50px;font-size:13px;font-weight:700;border-radius:10px;border:2px solid #4a5568;background:#222537;color:#dde2ec;cursor:pointer"
+      onclick="startSpracheText(document.getElementById('inp-adresse'))">MIC</button>
+  </div>
+  <span class="lbl">Objekttyp</span>
+  <div class="obj-grid">
+    <button class="obj-btn" onclick="selectObjekt('wohnung',this)"><span class="obj-icon">🏢</span>Wohnung</button>
+    <button class="obj-btn" onclick="selectObjekt('haus',this)"><span class="obj-icon">🏠</span>Haus</button>
+    <button class="obj-btn" onclick="selectObjekt('buero',this)"><span class="obj-icon">💼</span>Büro</button>
+    <button class="obj-btn" onclick="selectObjekt('gewerbe',this)"><span class="obj-icon">🏭</span>Gewerbe</button>
+  </div>
+  <button class="btn btn-block" id="btn-s1-next" disabled onclick="goTo(2)">Weiter → Räume</button>
+</div>
+
+<!-- SCHRITT 2 -->
+<div class="sec" id="s2">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span class="lbl" style="margin:0">Räume</span>
+    <button class="btn btn-g btn-sm" onclick="goTo(4)">Übersicht →</button>
+  </div>
+  <div id="raeume-list"></div>
+  <span class="lbl" style="margin-top:18px">Vorlage</span>
+  <div class="chip-wrap" id="vorlage-chips"></div>
+  <span class="lbl">Eigener Raum</span>
+  <div style="display:flex;gap:8px;margin-bottom:20px">
+    <input class="inp" id="inp-raum" placeholder="z.B. Hobbyraum" onkeydown="if(event.key==='Enter')addRaumCustom()" style="flex:1">
+    <button style="flex:0 0 56px;height:50px;font-size:13px;font-weight:700;border-radius:10px;border:2px solid #4a5568;background:#222537;color:#dde2ec;cursor:pointer"
+      onclick="startSpracheText(document.getElementById('inp-raum'))">MIC</button>
+    <button class="btn" style="white-space:nowrap" onclick="addRaumCustom()">+ Add</button>
+  </div>
+  <button class="btn btn-block" style="margin-top:4px" onclick="speichernUndZurueck()">💾 Aufmaß speichern</button>
+  <button class="btn btn-g btn-block" onclick="goTo(1)">← Zurück</button>
+</div>
+
+<!-- SCHRITT 3 -->
+<div class="sec" id="s3">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div>
+      <span class="lbl" id="s3-gewerk-lbl">Trockenbau</span>
+      <h2 id="s3-raum-titel" style="font-size:20px;font-weight:800;margin:0"></h2>
+    </div>
+    <button class="btn btn-g btn-sm" onclick="goTo(2)">← Räume</button>
+  </div>
+  <div id="pos-list"></div>
+  <button class="add-pos-btn" id="add-pos-btn" onclick="openModal()">＋ Eigene Position hinzufügen</button>
+  <div class="card" style="margin-top:12px">
+    <span class="lbl">Notiz</span>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <textarea class="inp" id="notiz-inp" placeholder="Besonderheiten..." onblur="saveNotiz()" style="flex:1;min-height:60px"></textarea>
+      <button style="flex:0 0 56px;height:50px;font-size:13px;font-weight:700;border-radius:10px;border:2px solid #4a5568;background:#222537;color:#dde2ec;cursor:pointer"
+        onclick="startSpracheText(document.getElementById('notiz-inp'))">MIC</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:0">
+    <span class="lbl">📷 Fotos</span>
+    <div class="foto-btns">
+      <button class="foto-btn" onclick="fotoAufnehmen()">📷 Kamera</button>
+      <button class="foto-btn" onclick="fotoGalerie()">🖼️ Galerie</button>
+    </div>
+    <div class="foto-grid" id="foto-grid"></div>
+    <input type="file" id="foto-input" accept="image/*" style="display:none" onchange="fotoLaden(event)">
+    <input type="file" id="foto-kamera" accept="image/*" capture="environment" style="display:none" onchange="fotoLaden(event)">
+  </div>
+  <button class="btn btn-block" style="margin-top:4px" onclick="goTo(2)">✓ Raum speichern</button>
+</div>
+
+<!-- SCHRITT 4 -->
+<div class="sec" id="s4">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <span class="lbl" style="margin:0">Zusammenfassung</span>
+    <button class="btn btn-g btn-sm" onclick="goTo(2)">← Räume</button>
+  </div>
+  <div class="card" id="sum-info" style="margin-bottom:16px"></div>
+  <div class="gewerk-tabs" id="sum-gewerk-tabs"></div>
+  <div id="sum-raeume"></div>
+  <div class="total-box" id="sum-total"></div>
+  <div id="pdf-header">
+    <div style="font-size:22px;font-weight:900;margin-bottom:4px">📐 AufmaßPro</div>
+    <div id="pdf-info-block"></div>
+  </div>
+  <button class="btn btn-block no-print" style="margin-top:12px;background:#10b981;color:#fff" onclick="exportPDF()">📄 Als PDF exportieren</button>
+  <button class="btn btn-block no-print" style="margin-top:8px" onclick="speichernUndZurueck()">💾 Aufmaß speichern & zurück</button>
+  <button class="btn btn-g btn-block no-print" style="margin-top:8px" onclick="neuesAufmass()">🔄 Neues Aufmaß erstellen</button>
+</div>
+
+<!-- Modal -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div id="modal">
+    <p style="margin:0 0 16px;font-weight:800;font-size:18px;color:var(--accent)">➕ Neue Position</p>
+    <span class="lbl">Bezeichnung</span>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input class="inp" id="modal-label" placeholder="z.B. Wandabschlussleiste" style="flex:1;margin-bottom:0">
+      <button style="flex:0 0 56px;height:50px;font-size:13px;font-weight:700;border-radius:10px;border:2px solid #4a5568;background:#222537;color:#dde2ec;cursor:pointer"
+        onclick="startSpracheText(document.getElementById('modal-label'))">MIC</button>
+    </div>
+    <span class="lbl">Einheit</span>
+    <div class="chip-wrap" id="modal-einheiten"></div>
+    <span class="lbl">Berechnungsart</span>
+    <div id="modal-calc-typen" style="margin-bottom:16px"></div>
+    <span class="lbl">Werte eingeben (optional)</span>
+    <div id="modal-felder" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-g" style="flex:1" onclick="closeModal()">Abbrechen</button>
+      <button class="btn" style="flex:2" onclick="saveCustomPos()">Position speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<div id="bottom-nav"></div>
+
+<script>
+const GEWERKE = [
+  {id:"trockenbau", label:"Trockenbau",      icon:"🧱", color:"#3b82f6"},
+  {id:"maler",      label:"Malerarbeiten",   icon:"🖌️", color:"#a855f7"},
+  {id:"fliesen",    label:"Fliesenarbeiten", icon:"⬜", color:"#06b6d4"},
+  {id:"boden",      label:"Bodenbelag",      icon:"🪵", color:"#f59e0b"},
+];
+
+const RAUM_VORLAGEN = {
+  wohnung:["Wohnzimmer","Schlafzimmer","Kinderzimmer","Küche","Bad","WC","Flur","Abstellraum","Balkon"],
+  haus:   ["Wohnzimmer","Schlafzimmer","Kinderzimmer","Küche","Bad","WC","Flur","Keller","Dachboden","Garage","Terrasse"],
+  buero:  ["Büroraum","Besprechungsraum","Empfang","Flur","Teeküche","Serverraum","Archiv","WC"],
+  gewerbe:["Verkaufsfläche","Lager","Büro","Umkleide","Sanitärraum","Flur","Eingangsbereich"],
+};
+
+const EINHEITEN = ["m²","lfm","Stk.","m³","m","kg","Psch."];
+
+const CALC_TYPEN = [
+  {id:"flaeche",     label:"Länge × Breite", felder:["laenge","breite"], labels:["Länge (m)","Breite (m)"]},
+  {id:"laengehoehe", label:"Länge × Höhe",   felder:["laenge","hoehe"],  labels:["Länge (m)","Höhe (m)"]},
+  {id:"direkt",      label:"Direkteingabe",  felder:["wert"],            labels:["Wert"]},
+];
+
+const STD_POS = {
+  trockenbau:[
+    {id:"wandflaeche", label:"Wandfläche",                calcTyp:"laengehoehe", einheit:"m²"},
+    {id:"decke",       label:"Abgehängte Decke",          calcTyp:"flaeche",     einheit:"m²"},
+    {id:"trennwand",   label:"Trennwand",                 calcTyp:"laengehoehe", einheit:"m²"},
+    {id:"schachtwand", label:"Schacht-/Installationswand",calcTyp:"laengehoehe", einheit:"m²"},
+    {id:"daemmung",    label:"Dämmung (Mineralwolle)",    calcTyp:"flaeche",     einheit:"m²"},
+    {id:"aussparung",  label:"Aussparungen / Öffnungen",  calcTyp:"direkt",      einheit:"Stk."},
+    {id:"revision",    label:"Revisionsklappen",          calcTyp:"direkt",      einheit:"Stk.", hasNotiz:true},
+    {id:"abzugTB",     label:"Abzug Türen / Fenster",     calcTyp:"flaeche",     einheit:"m²", abzug:true},
+    {id:"tueroeffnung", label:"Türöffnung herstellen",      calcTyp:"direkt",      einheit:"Stk.", hasNotiz:true},
+  ],
+  maler:[
+    {id:"wandMaler",   label:"Wand streichen",            calcTyp:"laengehoehe", einheit:"m²"},
+    {id:"deckeMaler",  label:"Decke streichen",           calcTyp:"flaeche",     einheit:"m²"},
+    {id:"tapete",      label:"Tapezieren",                calcTyp:"laengehoehe", einheit:"m²"},
+    {id:"spachtel",      label:"Spachteln / Glätten Wand",  calcTyp:"laengehoehe", einheit:"m²"},
+    {id:"spachtelDecke", label:"Spachteln / Glätten Decke", calcTyp:"flaeche",     einheit:"m²"},
+    {id:"tuerMaler",   label:"Türen lackieren",           calcTyp:"direkt",      einheit:"Stk."},
+    {id:"fensterMaler",label:"Fensterrahmen streichen",   calcTyp:"direkt",      einheit:"Stk."},
+    {id:"heizkoerper", label:"Heizkörper lackieren",      calcTyp:"direkt",      einheit:"Stk."},
+    {id:"abzugMaler",  label:"Abzug Fenster / Türen",     calcTyp:"flaeche",     einheit:"m²", abzug:true},
+  ],
+  fliesen:[
+    {id:"bodenFl",     label:"Bodenfliesen",              calcTyp:"flaeche",     einheit:"m²"},
+    {id:"wandFl",      label:"Wandfliesen",               calcTyp:"laengehoehe", einheit:"m²"},
+    {id:"dusche",      label:"Duschbereich",              calcTyp:"laengehoehe", einheit:"m²"},
+    {id:"abdichtung",  label:"Verbundabdichtung",         calcTyp:"direkt",      einheit:"m²"},
+    {id:"fuge",        label:"Verfugung",                 calcTyp:"direkt",      einheit:"m²"},
+    {id:"sockelFl",    label:"Sockel / Bordüre",          calcTyp:"direkt",      einheit:"lfm"},
+    {id:"schnitte",    label:"Schnitte / Schlitze",       calcTyp:"direkt",      einheit:"lfm"},
+    {id:"abzugFl",     label:"Abzug (Aussparungen)",      calcTyp:"flaeche",     einheit:"m²", abzug:true},
+  ],
+  boden:[
+    {id:"flaeche",     label:"Bodenfläche",               calcTyp:"flaeche",     einheit:"m²"},
+    {id:"sockel",      label:"Sockelleisten",             calcTyp:"direkt",      einheit:"lfm"},
+    {id:"treppe",      label:"Treppenstufen",             calcTyp:"direkt",      einheit:"Stk."},
+    {id:"uebergang",   label:"Übergänge / Schienen",      calcTyp:"direkt",      einheit:"Stk."},
+    {id:"tuerausschn", label:"Türausschnitte",            calcTyp:"direkt",      einheit:"Stk."},
+    {id:"estrich",     label:"Estrichfläche",             calcTyp:"flaeche",     einheit:"m²"},
+    {id:"abzugBoden",  label:"Abzugsfläche (Säulen etc.)",calcTyp:"flaeche",     einheit:"m²", abzug:true},
+  ],
+};
+
+// ── State ──────────────────────────────────────────────────────────────────
+let state = {
+  schritt: 1,
+  objektTyp: null,
+  aktGewerk: "trockenbau",
+  raeume: [],
+  aktiverRaum: null,
+  raumDaten: {},   // {raum: {gewerk: {posId: {aktiv, felder:{key:val}}}}}
+  notizen: {},     // {raum_gewerk: text}
+  fotos: {},       // {raum: [base64, ...]}
+  customPos: loadCustomPos(),
+};
+
+function loadCustomPos() {
+  try { return JSON.parse(localStorage.getItem("aufmass_custom")||"{}"); } catch { return {}; }
+}
+function saveCustomPosStorage() {
+  try { localStorage.setItem("aufmass_custom", JSON.stringify(state.customPos)); } catch {}
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function gewerk() { return GEWERKE.find(g => g.id === state.aktGewerk); }
+function setAccent(color) { document.documentElement.style.setProperty('--accent', color); }
+function toNum(v) { return parseFloat((v||'').toString().replace(',','.').replace(/\s/g,''))||0; }
+function fmtNum(v) { return v.toFixed(2).replace('.',','); }
+
+function calcWert(pos, felder) {
+  if (pos.calcTyp === "flaeche")     return toNum(felder.laenge) * toNum(felder.breite);
+  if (pos.calcTyp === "laengehoehe") return toNum(felder.laenge) * toNum(felder.hoehe);
+  return toNum(felder.wert);
+}
+function calcUmfang(pos, felder) {
+  if (pos.calcTyp === "flaeche")     return 2*(toNum(felder.laenge)+toNum(felder.breite));
+  if (pos.calcTyp === "laengehoehe") return 2*(toNum(felder.laenge)+toNum(felder.hoehe));
+  return null;
+}
+function getPosData(raum, gewerk, posId) {
+  return state.raumDaten[raum]?.[gewerk]?.[posId] || {aktiv:false, felder:{}};
+}
+function setPosData(raum, gewerk, posId, data) {
+  if (!state.raumDaten[raum]) state.raumDaten[raum] = {};
+  if (!state.raumDaten[raum][gewerk]) state.raumDaten[raum][gewerk] = {};
+  state.raumDaten[raum][gewerk][posId] = data;
+}
+function getAllePos() {
+  const std = STD_POS[state.aktGewerk] || [];
+  const cust = state.customPos[state.aktGewerk] || [];
+  return [...std, ...cust];
+}
+function aktiveAnzahl(raum) {
+  return getAllePos().filter(p => getPosData(raum, state.aktGewerk, p.id).aktiv).length;
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function goTo(n) {
+  state.schritt = n;
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  document.getElementById('bottom-nav').style.display = 'flex';
+  // Progress bars
+  for(let i=1;i<=4;i++){
+    const b = document.getElementById('p'+i);
+    b.className = 'pbar' + (i<n?' done':i===n?' active':'');
+  }
+  updateHeader();
+  if (n===2) renderRaeume();
+  if (n===3) renderPosListe();
+  if (n===4) renderSummary();
+  window.scrollTo(0,0);
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────
+function updateHeader() {
+  const g = gewerk();
+  const k = document.getElementById('inp-kunde').value;
+  const a = document.getElementById('inp-adresse').value;
+  document.getElementById('hdr-title').textContent = (g?.icon||'') + ' AufmaßPro';
+  document.getElementById('hdr-sub').textContent = (g?.label||'') + (k?' · '+k:'') + (a?' · '+a:'');
+}
+
+// ── Bottom Nav ─────────────────────────────────────────────────────────────
+function renderNav() {
+  const nav = document.getElementById('bottom-nav');
+  nav.innerHTML = GEWERKE.map(g => `
+    <button class="nav-btn ${g.id===state.aktGewerk?'active':''}" onclick="switchGewerk('${g.id}')">
+      <span class="nav-icon">${g.icon}</span>
+      ${g.label.replace('arbeiten','').replace('belag','')}
+    </button>`).join('');
+}
+function switchGewerk(id) {
+  state.aktGewerk = id;
+  setAccent(gewerk().color);
+  renderNav();
+  updateHeader();
+  if (state.schritt===3) renderPosListe();
+  if (state.schritt===2) renderRaeume();
+  if (state.schritt===4) renderSummary();
+  document.getElementById('s3-gewerk-lbl').textContent = gewerk().label;
+}
+
+// ── Schritt 1 ──────────────────────────────────────────────────────────────
+function selectObjekt(id, btn) {
+  state.objektTyp = id;
+  document.querySelectorAll('.obj-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('btn-s1-next').disabled = false;
+  renderVorlageChips();
+}
+function renderVorlageChips() {
+  const chips = document.getElementById('vorlage-chips');
+  const vorlagen = RAUM_VORLAGEN[state.objektTyp] || [];
+  chips.innerHTML = vorlagen.filter(v => !state.raeume.includes(v)).map(v =>
+    `<button class="chip" onclick="addRaum('${v}')">${v}</button>`).join('');
+}
+
+// ── Schritt 2: Räume ───────────────────────────────────────────────────────
+function addRaum(name) {
+  name = name.trim();
+  if (!name || state.raeume.includes(name)) return;
+  state.raeume.push(name);
+  state.aktiverRaum = name;
+  renderRaeume();
+  renderVorlageChips();
+  document.getElementById('inp-raum').value = '';
+  goTo(3);
+}
+function addRaumCustom() {
+  addRaum(document.getElementById('inp-raum').value);
+}
+function renderRaeume() {
+  const list = document.getElementById('raeume-list');
+  list.innerHTML = state.raeume.map(r => {
+    const n = aktiveAnzahl(r);
+    const aktiv = r === state.aktiverRaum;
+    const accentColor = gewerk().color;
+    const badgeColor = n>0 ? accentColor : '#4a5568';
+    return `<button class="raum-btn ${aktiv?'active':''}" onclick="selectRaum('${r}')">
+      <span>${r}</span>
+      <span class="badge" style="background:${badgeColor}22;color:${badgeColor}">${n} Pos.</span>
+    </button>`;
+  }).join('');
+  renderVorlageChips();
+  const g = gewerk();
+  document.querySelector('#s2 .lbl').textContent = 'RÄUME · ' + g.label.toUpperCase();
+}
+function selectRaum(name) {
+  state.aktiverRaum = name;
+  goTo(3);
+}
+
+// ── Schritt 3: Aufmaß ──────────────────────────────────────────────────────
+function renderPosListe() {
+  const raum = state.aktiverRaum;
+  const g = gewerk();
+  document.getElementById('s3-raum-titel').textContent = raum;
+  document.getElementById('s3-gewerk-lbl').textContent = g.label;
+  setAccent(g.color);
+
+  const addBtn = document.getElementById('add-pos-btn');
+  addBtn.style.borderColor = g.color+'55';
+  addBtn.style.color = g.color;
+  addBtn.style.background = g.color+'08';
+
+  // Notiz laden
+  const notizKey = raum+'_'+state.aktGewerk;
+  document.getElementById('notiz-inp').value = state.notizen[notizKey]||'';
+  renderFotoGrid();
+
+  const std = STD_POS[state.aktGewerk]||[];
+  const cust = state.customPos[state.aktGewerk]||[];
+
+  let html = std.map(pos => renderPosCard(pos, raum, false)).join('');
+  if (cust.length > 0) {
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px">
+      <span class="lbl" style="margin:0">EIGENE POSITIONEN</span>
+      <button class="btn btn-g btn-sm" onclick="toggleLoeschModus()" id="losch-btn">✕ Löschen</button>
+    </div>`;
+    html += cust.map(pos => renderPosCard(pos, raum, true)).join('');
+  }
+
+  document.getElementById('pos-list').innerHTML = html;
+}
+
+let loeschModus = false;
+function toggleLoeschModus() {
+  loeschModus = !loeschModus;
+  document.getElementById('losch-btn').textContent = loeschModus ? '✓ Fertig' : '✕ Löschen';
+  document.getElementById('losch-btn').style.color = loeschModus ? '#ef4444' : '';
+  renderPosListe();
+}
+
+function renderPosCard(pos, raum, isCustom) {
+  const data = getPosData(raum, state.aktGewerk, pos.id);
+  const akt = data.aktiv;
+  const felder = data.felder || {};
+  const ct = CALC_TYPEN.find(c => c.id === pos.calcTyp) || CALC_TYPEN[2];
+  const wert = calcWert(pos, felder);
+  const umfang = (pos.calcTyp==='flaeche'||pos.calcTyp==='laengehoehe') ? calcUmfang(pos, felder) : null;
+  const g = gewerk();
+
+  // Übernahme-Quellen prüfen
+  const quellen = getUebernahmeQuellen(state.aktGewerk, pos.id, raum);
+
+  let felderHtml = '';
+  if (akt) {
+    felderHtml = `<div class="pos-felder">`;
+    ct.felder.forEach((fKey, i) => {
+      const fLabel = ct.labels[i];
+      const fVal = felder[fKey]||'';
+      felderHtml += `
+        <div class="feld-row">
+          <span style="font-size:12px;color:#4a5568;font-weight:600">${fLabel}</span>
+          <input class="sm-inp" type="text" inputmode="decimal" enterkeyhint="next"
+            value="${fVal}" placeholder="0"
+            onkeydown="if(event.key==='Enter'){this.blur()}"
+            style="width:100%"
+          />
+        </div>`;
+    });
+    // Positions-Notiz (z.B. für Revisionsklappen mit verschiedenen Größen)
+    if (pos.hasNotiz) {
+      const posNotiz = felder['_notiz']||'';
+      felderHtml += `
+        <div class="feld-row" style="margin-top:4px">
+          <span style="font-size:12px;color:#4a5568;font-weight:600">Notiz / Größen</span>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <textarea class="pos-notiz-inp" placeholder="${pos.id==='tueroeffnung'?'z.B. 2x 86/200cm, 1x 100/210cm...':'z.B. 2x 30/30cm, 1x 40/40cm...'}"
+              style="flex:1;background:#0b0d14;border:1.5px solid #222537;border-radius:8px;padding:9px 11px;color:#dde2ec;font-size:14px;outline:none;resize:vertical;min-height:60px;font-family:inherit"
+              onblur="savePosNotiz(this,'${raum}','${pos.id}')"
+            >${posNotiz}</textarea>
+            <button style="flex:0 0 56px;height:50px;font-size:13px;font-weight:700;border-radius:10px;border:2px solid #4a5568;background:#222537;color:#dde2ec;cursor:pointer"
+              onclick="startSpracheText(this.previousElementSibling)">MIC</button>
+          </div>
+        </div>`;
+    }
+
+    // Einzel-OK Button unter allen Feldern
+    // Mic button - single button for all fields
+    const feldCount = ct.felder.length;
+    const micHint = feldCount > 1
+      ? `z.B. "5,63 mal 3,96" für ${ct.labels.join(' und ')}`
+      : `z.B. "5,63" für ${ct.labels[0]}`;
+    felderHtml += `<div style="display:flex;gap:8px;margin-top:8px">
+      <button class="mic-btn"
+        data-felder="${ct.felder.join(',')}"
+        data-count="${feldCount}"
+        onclick="startSprachePro(this)"
+        style="flex:0 0 56px;height:50px;font-size:22px;border-radius:10px;border:2px solid #4a5568;background:#222537;color:#dde2ec;cursor:pointer">MIC</button>
+      <button class="btn-ok"
+        data-raum="${raum}"
+        data-posid="${pos.id}"
+        data-felder="${ct.felder.join(',')}"
+        style="flex:1;background:${g.color};color:#0e1016;border-radius:10px;padding:12px;font-size:16px;cursor:pointer;border:none;font-weight:700"
+        onclick="saveAlleFelder(this)">✓ OK</button>
+    </div>`;
+
+    // Result-Box: Fläche + Umfang (nach den Feldern, sichtbar sobald Werte vorhanden)
+    if (wert > 0) {
+      const isAbzug = !!pos.abzug;
+      const wertColor = isAbzug ? '#ef4444' : g.color;
+      const wertPrefix = isAbzug ? '− ' : '';
+      felderHtml += `<div class="result-box" style="margin-top:10px">
+        <div class="result-col">
+          <div class="result-label">${isAbzug ? 'Abzug' : 'Fläche'}</div>
+          <div class="result-val" style="color:${wertColor}">${wertPrefix}${fmtNum(wert)} ${pos.einheit}</div>
+        </div>`;
+      if (umfang !== null && umfang > 0) {
+        felderHtml += `<div class="result-divider"></div>
+        <div class="result-col">
+          <div class="result-label">Umfang</div>
+          <div class="result-val" style="color:#34d399">${fmtNum(umfang)} m</div>
+        </div>`;
+      }
+      felderHtml += `</div>`;
+    }
+
+    felderHtml += `</div>`;
+  }
+
+  const chkClass = akt ? 'chk active' : 'chk';
+  const cardClass = akt ? 'pos-card active' : 'pos-card';
+  const badgeStyle = `background:#4a5568;color:#dde2ec;border-radius:6px;padding:2px 9px;font-size:12px;font-weight:700`;
+
+  let leftBtn = '';
+  if (isCustom && loeschModus) {
+    leftBtn = `<button onclick="deleteCustomPos('${pos.id}')" style="width:24px;height:24px;border-radius:7px;border:none;background:#ef444433;color:#ef4444;font-size:14px;font-weight:900;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✕</button>`;
+  } else {
+    leftBtn = `<div class="${chkClass}" onclick="togglePos('${raum}','${pos.id}')" style="${akt?'background:'+g.color+';border-color:'+g.color+';color:#0e1016':''}">${akt?'✓':''}</div>`;
+  }
+
+  const customBadge = isCustom ? `<span style="background:${g.color}22;color:${g.color};border-radius:6px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px">Eigene</span>` : '';
+
+  // Übernahme-Buttons (nur wenn Quellen vorhanden und Position noch nicht aktiv oder leer)
+  const uebernahmeHtml = quellen.length > 0 ? `
+    <div style="padding:6px 0 2px;display:flex;flex-direction:column;gap:6px">
+      ${quellen.map(q => `<button style="padding:7px 10px;border-radius:8px;border:1.5px solid ${g.color}55;background:${g.color}12;color:${g.color};font-size:12px;font-weight:700;cursor:pointer;text-align:left"
+        onclick="uebernehmeWert('${raum}','${pos.id}','${q.gewerk}','${q.posId}')">
+        ↓ Wert übernehmen von: ${q.label}
+      </button>`).join('')}
+    </div>` : '';
+
+  return `<div class="${cardClass}" id="card-${pos.id}">
+    <div class="pos-header">
+      ${leftBtn}
+      <div style="flex:1">
+        <span style="font-weight:600;font-size:15px">${pos.label}${customBadge}</span>
+      </div>
+      <span style="${badgeStyle}">${pos.einheit}</span>
+    </div>
+    ${uebernahmeHtml}
+    ${felderHtml}
+  </div>`;
+}
+
+function togglePos(raum, posId) {
+  const data = getPosData(raum, state.aktGewerk, posId);
+  data.aktiv = !data.aktiv;
+  setPosData(raum, state.aktGewerk, posId, data);
+  renderPosListe();
+}
+
+function saveAlleFelder(btn) {
+  const raum   = btn.getAttribute('data-raum');
+  const posId  = btn.getAttribute('data-posid');
+  const felder = btn.getAttribute('data-felder').split(',');
+  const card   = btn.closest('.pos-card');
+  const inputs = card ? card.querySelectorAll('.sm-inp') : [];
+  const data   = getPosData(raum, state.aktGewerk, posId);
+  if (!data.felder) data.felder = {};
+  felder.forEach((fKey, i) => {
+    if (inputs[i]) {
+      data.felder[fKey] = inputs[i].value.trim().replace(/\s/g,'').replace(',','.');
+    }
+  });
+  // Positions-Notiz speichern falls vorhanden
+  const notizInp = card ? card.querySelector('.pos-notiz-inp') : null;
+  if (notizInp) data.felder['_notiz'] = notizInp.value;
+  setPosData(raum, state.aktGewerk, posId, data);
+  renderPosListe();
+}
+
+function saveFeld(raum, posId, key, val) {
+  val = val.replace(',','.');
+  const data = getPosData(raum, state.aktGewerk, posId);
+  if (!data.felder) data.felder = {};
+  data.felder[key] = val;
+  setPosData(raum, state.aktGewerk, posId, data);
+  // Re-render only result box
+  renderPosListe();
+}
+
+function saveFeldBtn(btn, raum, posId, key) {
+  const inp = btn.previousElementSibling;
+  saveFeld(raum, posId, key, inp.value);
+}
+
+function saveNotiz() {
+  const key = state.aktiverRaum+'_'+state.aktGewerk;
+  state.notizen[key] = document.getElementById('notiz-inp').value;
+}
+
+function deleteCustomPos(posId) {
+  state.customPos[state.aktGewerk] = (state.customPos[state.aktGewerk]||[]).filter(p=>p.id!==posId);
+  saveCustomPosStorage();
+  renderPosListe();
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+let modalEinheit = 'm²';
+let modalCalcTyp = 'direkt';
+
+function openModal() {
+  modalEinheit = 'm²'; modalCalcTyp = 'direkt';
+  document.getElementById('modal-label').value = '';
+  document.getElementById('modal-felder').innerHTML = '';
+
+  document.getElementById('modal-einheiten').innerHTML = EINHEITEN.map(e =>
+    `<button class="einheit-btn ${e===modalEinheit?'active':''}" onclick="selectEinheit('${e}',this)">${e}</button>`).join('');
+
+  document.getElementById('modal-calc-typen').innerHTML = CALC_TYPEN.map(ct =>
+    `<button class="calc-btn ${ct.id===modalCalcTyp?'active':''}" onclick="selectCalcTyp('${ct.id}',this)">
+      <strong>${ct.label}</strong>
+      <span style="color:#4a5568;font-size:12px;margin-left:8px">(${ct.labels.join(', ')})</span>
+    </button>`).join('');
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function selectEinheit(e, btn) {
+  modalEinheit = e;
+  document.querySelectorAll('.einheit-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function selectCalcTyp(id, btn) {
+  modalCalcTyp = id;
+  document.querySelectorAll('.calc-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // Render input fields for the selected calc type
+  const ct = CALC_TYPEN.find(c => c.id === id);
+  const felderDiv = document.getElementById('modal-felder');
+  if (!felderDiv || !ct) return;
+  felderDiv.innerHTML = ct.felder.map((fKey, i) => `
+    <div>
+      <p style="margin:0 0 4px;font-size:12px;color:#4a5568;font-weight:600">${ct.labels[i]}</p>
+      <div style="display:flex;gap:8px">
+        <input type="text" inputmode="decimal" id="modal-val-${fKey}"
+          placeholder="0"
+          style="flex:1;background:#0b0d14;border:1.5px solid #222537;border-radius:8px;padding:9px 11px;color:#dde2ec;font-size:16px;outline:none">
+        <button style="flex:0 0 56px;height:44px;font-size:13px;font-weight:700;border-radius:8px;border:2px solid #4a5568;background:#222537;color:#dde2ec;cursor:pointer"
+          onclick="startSpracheText(document.getElementById('modal-val-${fKey}'))">MIC</button>
+      </div>
+    </div>`).join('');
+}
+function saveCustomPos() {
+  const label = document.getElementById('modal-label').value.trim();
+  if (!label) return;
+  const posId = 'custom_'+Date.now();
+  const pos = {id:posId, label, einheit:modalEinheit, calcTyp:modalCalcTyp, custom:true};
+  if (!state.customPos[state.aktGewerk]) state.customPos[state.aktGewerk] = [];
+  state.customPos[state.aktGewerk].push(pos);
+
+  // Save entered values directly
+  const ct = CALC_TYPEN.find(c => c.id === modalCalcTyp);
+  if (ct && state.aktiverRaum) {
+    const felder = {};
+    let hasValue = false;
+    ct.felder.forEach(fKey => {
+      const inp = document.getElementById('modal-val-'+fKey);
+      if (inp && inp.value.trim()) {
+        felder[fKey] = inp.value.trim().replace(',','.');
+        hasValue = true;
+      }
+    });
+    if (hasValue) {
+      const data = {aktiv: true, felder};
+      if (!state.raumDaten[state.aktiverRaum]) state.raumDaten[state.aktiverRaum] = {};
+      if (!state.raumDaten[state.aktiverRaum][state.aktGewerk]) state.raumDaten[state.aktiverRaum][state.aktGewerk] = {};
+      state.raumDaten[state.aktiverRaum][state.aktGewerk][posId] = data;
+    }
+  }
+
+  saveCustomPosStorage();
+  closeModal();
+  renderPosListe();
+}
+
+// ── Schritt 4: Zusammenfassung ─────────────────────────────────────────────
+function renderSummary() {
+  const g = gewerk();
+  setAccent(g.color);
+  const k = document.getElementById('inp-kunde').value;
+  const a = document.getElementById('inp-adresse').value;
+  const oTyp = ['wohnung','haus','buero','gewerbe'].includes(state.objektTyp) ?
+    {wohnung:'Wohnung',haus:'Haus',buero:'Büro',gewerbe:'Gewerbe'}[state.objektTyp] : '–';
+
+  document.getElementById('sum-info').innerHTML = `
+    <p style="font-weight:700;font-size:17px;margin-bottom:3px">${k||'–'}</p>
+    <p style="font-size:14px;color:#4a5568;margin-bottom:2px">${a||'–'}</p>
+    <p style="font-size:13px;color:#4a5568">${oTyp} · ${state.raeume.length} Räume</p>`;
+
+  document.getElementById('sum-gewerk-tabs').innerHTML = GEWERKE.map(gw =>
+    `<button class="gewerk-tab ${gw.id===state.aktGewerk?'active':''}" style="${gw.id===state.aktGewerk?'border-color:'+gw.color+';background:'+gw.color+'1a;color:'+gw.color:''}" onclick="switchGewerk('${gw.id}')">
+      ${gw.icon} ${gw.label.replace('arbeiten','').replace('belag','')}
+    </button>`).join('');
+
+  const allePos = getAllePos();
+
+  // Gesamtsummen pro Position über alle Räume
+  const posGesamt = {}; // {posId: {label, einheit, summe}}
+  allePos.forEach(p => { posGesamt[p.id] = {label:p.label, einheit:p.einheit, summe:0}; });
+
+  document.getElementById('sum-raeume').innerHTML = state.raeume.map(r => {
+    const aktPos = allePos.filter(p => getPosData(r, state.aktGewerk, p.id).aktiv);
+    const notizKey = r+'_'+state.aktGewerk;
+    const notiz = state.notizen[notizKey]||'';
+    let rowsHtml = aktPos.length===0 ? `<p style="padding:10px 15px;color:#4a5568;font-size:14px;margin:0">Keine Positionen</p>` :
+      aktPos.map(p => {
+        const felder = getPosData(r, state.aktGewerk, p.id).felder||{};
+        const w = calcWert(p, felder);
+        posGesamt[p.id].summe += w;
+        posGesamt[p.id].abzug = !!p.abzug;
+        const isAbzug = !!p.abzug;
+        const rowColor = w>0 ? (isAbzug ? '#ef4444' : g.color) : '#4a5568';
+        const prefix = isAbzug ? '− ' : '';
+        const posNotizSum = (getPosData(r, state.aktGewerk, p.id).felder||{})['_notiz']||'';
+        return `<div class="sum-row" style="flex-direction:column;align-items:flex-start;gap:2px">
+          <div style="display:flex;justify-content:space-between;width:100%">
+            <span style="color:#4a5568">${p.label}${p.custom?' ★':''}</span>
+            <span style="font-weight:700;color:${rowColor}">${prefix}${fmtNum(w)} ${p.einheit}</span>
+          </div>
+          ${posNotizSum ? `<span style="font-size:12px;color:#4a5568;font-style:italic;padding-left:2px">📝 ${posNotizSum}</span>` : ''}
+        </div>`;
+      }).join('');
+    if (notiz) rowsHtml += `<div style="padding:7px 15px;font-size:13px;color:#4a5568;font-style:italic">📝 ${notiz}</div>`;
+    const fotos = state.fotos[r]||[];
+    if (fotos.length > 0) {
+      rowsHtml += `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 15px">` +
+        fotos.map((src,i) => `<img src="${src}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;cursor:pointer" onclick="openLightbox('${r}',${i})">`).join('') +
+        `</div>`;
+    }
+    return `<div class="sum-raum">
+      <div class="sum-header">
+        <span>${r}</span>
+        <button class="btn btn-sm" onclick="editRaum('${r}')" style="background:${g.color};color:#0e1016">Bearbeiten</button>
+      </div>
+      ${rowsHtml}
+    </div>`;
+  }).join('');
+
+  // Gesamtübersicht pro Position (nur aktive)
+  const aktivePosGesamt = Object.values(posGesamt).filter(p => p.summe > 0);
+  let totalHtml = '';
+  if (aktivePosGesamt.length === 0) {
+    totalHtml = `<p style="color:#4a5568;font-size:14px">Keine Positionen erfasst</p>`;
+  } else {
+    // Netto pro Einheit berechnen (Summe - Abzüge)
+    const nettoMap = {}; // {einheit: {brutto, abzug}}
+    aktivePosGesamt.forEach(p => {
+      if (!nettoMap[p.einheit]) nettoMap[p.einheit] = {brutto:0, abzug:0};
+      if (p.abzug) nettoMap[p.einheit].abzug += p.summe;
+      else         nettoMap[p.einheit].brutto += p.summe;
+    });
+
+    const posRows = aktivePosGesamt.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #222537">
+        <span style="font-size:14px;color:${p.abzug?'#ef4444':'#dde2ec'}">${p.abzug?'− ':''}${p.label}</span>
+        <span style="font-size:15px;font-weight:900;color:${p.abzug?'#ef4444':g.color}">${p.abzug?'− ':''}${fmtNum(p.summe)} ${p.einheit}</span>
+      </div>`).join('');
+
+    // Netto-Zeilen pro Einheit (nur wenn es Abzüge gibt)
+    const nettoRows = Object.entries(nettoMap)
+      .filter(([einheit, v]) => v.abzug > 0)
+      .map(([einheit, v]) => {
+        const netto = v.brutto - v.abzug;
+        return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin-top:4px;border-top:2px solid ${g.color}">
+        <span style="font-size:14px;font-weight:700;color:#dde2ec">
+          = Netto gesamt (${einheit})
+          <span style="display:block;font-size:11px;font-weight:400;color:#4a5568">nach Abzug</span>
+        </span>
+        <span style="font-size:18px;font-weight:900;color:${g.color}">${fmtNum(netto)} ${einheit}</span>
+      </div>`;
+      }).join('');
+
+    totalHtml = `
+      <div style="width:100%">
+        <div style="font-size:12px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
+          ${g.icon} Gesamtübersicht · ${g.label}
+        </div>
+        ${posRows}
+        ${nettoRows}
+      </div>`;
+  }
+  document.getElementById('sum-total').innerHTML = totalHtml;
+}
+
+function editRaum(name) {
+  state.aktiverRaum = name;
+  goTo(3);
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────
+function resetApp() {
+  state.raeume = []; state.aktiverRaum = null; state.raumDaten = {}; state.notizen = {}; state.fotos = {};
+  state.objektTyp = null;
+  document.getElementById('inp-kunde').value = '';
+  document.getElementById('inp-adresse').value = '';
+  document.querySelectorAll('.obj-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btn-s1-next').disabled = true;
+  loeschModus = false;
+}
+
+
+// ── Aufmaß-Ordner ──────────────────────────────────────────────────────────
+const AUFMASSE_KEY = "aufmass_gespeichert";
+let aktuelleAufmassId = null;
+
+function loadAufmasse() {
+  try { return JSON.parse(localStorage.getItem(AUFMASSE_KEY)||"[]"); } catch { return []; }
+}
+function saveAufmasse(list) {
+  try { localStorage.setItem(AUFMASSE_KEY, JSON.stringify(list)); } catch {}
+}
+
+function renderOrdner() {
+  const list = loadAufmasse();
+  const el = document.getElementById('aufmass-list');
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <span class="empty-icon">📋</span>
+      <p style="font-size:16px;font-weight:700;color:#dde2ec;margin-bottom:6px">Noch keine Aufmaße</p>
+      <p style="font-size:14px">Erstelle dein erstes Aufmaß!</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML = list.slice().reverse().map(a => {
+    const datum = new Date(a.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const raumAnzahl = (a.raeume||[]).length;
+    return `<div style="background:#181b26;border:1.5px solid #222537;border-radius:13px;margin-bottom:10px;overflow:hidden">
+      <div class="aufmass-item" style="border-radius:0;margin:0" onclick="oeffneAufmass('${a.id}')">
+        <span style="font-size:28px">📋</span>
+        <div class="aufmass-item-info">
+          <div class="aufmass-item-title">${a.kundenName||'Unbekannt'}</div>
+          <div class="aufmass-item-sub">${a.adresse||'–'} · ${raumAnzahl} Räume · ${datum}</div>
+        </div>
+        <button class="aufmass-item-del" onclick="event.stopPropagation();loescheAufmass('${a.id}')">🗑</button>
+      </div>
+      <div style="display:flex;border-top:1px solid #222537">
+        <button onclick="oeffneAufmass('${a.id}')" style="flex:1;padding:10px;border:none;background:transparent;color:#4a5568;font-size:13px;font-weight:600;cursor:pointer;border-right:1px solid #222537">
+          ✏️ Öffnen
+        </button>
+        <button onclick="weiteresBaustelle('${a.id}')" style="flex:1;padding:10px;border:none;background:transparent;color:#f59e0b;font-size:13px;font-weight:600;cursor:pointer">
+          ➕ Weiteres Aufmaß
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function oeffneAufmass(id) {
+  const list = loadAufmasse();
+  const a = list.find(x => x.id === id);
+  if (!a) return;
+  aktuelleAufmassId = id;
+  // State wiederherstellen
+  state.raeume = a.raeume||[];
+  state.raumDaten = a.raumDaten||{};
+  state.notizen = a.notizen||{};
+  state.fotos = a.fotos||{};
+  state.objektTyp = a.objektTyp||null;
+  state.aktGewerk = a.aktGewerk||'trockenbau';
+  document.getElementById('inp-kunde').value = a.kundenName||'';
+  document.getElementById('inp-adresse').value = a.adresse||'';
+  // Objekttyp-Button aktivieren
+  document.querySelectorAll('.obj-btn').forEach(b=>b.classList.remove('active'));
+  if (a.objektTyp) {
+    const map = {wohnung:0,haus:1,buero:2,gewerbe:3};
+    const idx = map[a.objektTyp];
+    if (idx !== undefined) document.querySelectorAll('.obj-btn')[idx].classList.add('active');
+    document.getElementById('btn-s1-next').disabled = false;
+  }
+  switchGewerk(state.aktGewerk);
+  updateHeader();
+  goTo(4);
+}
+
+function loescheAufmass(id) {
+  if (!confirm('Aufmaß wirklich löschen?')) return;
+  const list = loadAufmasse().filter(a => a.id !== id);
+  saveAufmasse(list);
+  renderOrdner();
+}
+
+function speichernUndZurueck() {
+  const list = loadAufmasse();
+  const id = aktuelleAufmassId || ('aufmass_'+Date.now());
+  const bestehend = list.find(a => a.id === id);
+
+  // Räume zusammenführen: bestehende + neue
+  let mergedRaeume = [...(state.raeume||[])];
+  let mergedRaumDaten = JSON.parse(JSON.stringify(state.raumDaten||{}));
+  let mergedNotizen = Object.assign({}, state.notizen||{});
+
+  if (bestehend) {
+    // Alle alten Räume die nicht in neuen sind hinzufügen
+    (bestehend.raeume||[]).forEach(r => {
+      if (!mergedRaeume.includes(r)) mergedRaeume.unshift(r);
+    });
+    // RaumDaten zusammenführen: ALLES behalten, neue Einträge ergänzen
+    Object.keys(bestehend.raumDaten||{}).forEach(raum => {
+      if (!mergedRaumDaten[raum]) mergedRaumDaten[raum] = {};
+      Object.keys(bestehend.raumDaten[raum]||{}).forEach(gw => {
+        if (!mergedRaumDaten[raum][gw]) {
+          // Gewerk im neuen noch nicht vorhanden → altes übernehmen
+          mergedRaumDaten[raum][gw] = bestehend.raumDaten[raum][gw];
+        } else {
+          // Gewerk in beiden vorhanden → Positionen zusammenführen
+          // Alte Positionen die im neuen NICHT aktiv sind → aus altem übernehmen
+          Object.keys(bestehend.raumDaten[raum][gw]||{}).forEach(posId => {
+            if (!mergedRaumDaten[raum][gw][posId] || !mergedRaumDaten[raum][gw][posId].aktiv) {
+              if (bestehend.raumDaten[raum][gw][posId]?.aktiv) {
+                mergedRaumDaten[raum][gw][posId] = bestehend.raumDaten[raum][gw][posId];
+              }
+            }
+          });
+        }
+      });
+    });
+    // Notizen zusammenführen - beide behalten
+    Object.keys(bestehend.notizen||{}).forEach(k => {
+      if (!mergedNotizen[k]) mergedNotizen[k] = bestehend.notizen[k];
+    });
+    // Fotos zusammenführen
+    Object.keys(bestehend.fotos||{}).forEach(raum => {
+      if (!state.fotos[raum]) state.fotos[raum] = [];
+      (bestehend.fotos[raum]||[]).forEach(f => { if (!state.fotos[raum].includes(f)) state.fotos[raum].push(f); });
+    });
+  }
+
+  const eintrag = {
+    id,
+    kundenName: document.getElementById('inp-kunde').value,
+    adresse: document.getElementById('inp-adresse').value,
+    objektTyp: state.objektTyp,
+    aktGewerk: state.aktGewerk,
+    raeume: mergedRaeume,
+    raumDaten: mergedRaumDaten,
+    notizen: mergedNotizen,
+    fotos: state.fotos||{},
+    datum: new Date().toISOString(),
+  };
+
+  const idx = list.findIndex(a => a.id === id);
+  if (idx >= 0) list[idx] = eintrag; else list.push(eintrag);
+
+  saveAufmasse(list);
+  aktuelleAufmassId = eintrag.id;
+  resetApp();
+  goToOrdner();
+}
+
+function neuesAufmass() {
+  // Komplett neu - neuer Kunde
+  aktuelleAufmassId = null;
+  resetApp();
+  goTo(1);
+}
+
+function weiteresBaustelle(id) {
+  // Gleiche Baustelle öffnen - alles laden, direkt zu Räumen
+  oeffneAufmass(id);
+  // Nach oeffneAufmass (das goTo(4) macht) zu Räumen navigieren
+  setTimeout(() => goTo(2), 50);
+}
+
+function goToOrdner() {
+  state.schritt = 0;
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s0').classList.add('active');
+  document.querySelectorAll('.pbar').forEach(b=>b.className='pbar');
+  document.getElementById('header').querySelector('h1').textContent = '📁 AufmaßPro';
+  document.getElementById('header').querySelector('p').textContent = 'Meine Aufmaße';
+  document.getElementById('bottom-nav').style.display = 'none';
+  renderOrdner();
+  window.scrollTo(0,0);
+}
+
+
+// ── PDF Export ─────────────────────────────────────────────────────────────
+function exportPDF() {
+  const k = document.getElementById('inp-kunde').value || '–';
+  const a = document.getElementById('inp-adresse').value || '–';
+  const datum = new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const oTyp = {wohnung:'Wohnung',haus:'Haus',buero:'Büro',gewerbe:'Gewerbe'}[state.objektTyp]||'–';
+
+  // Fill PDF header info
+  document.getElementById('pdf-info-block').innerHTML = `
+    <div style="font-size:14px;margin-top:6px"><strong>Kunde:</strong> ${k}</div>
+    <div style="font-size:14px"><strong>Adresse:</strong> ${a}</div>
+    <div style="font-size:14px"><strong>Objekttyp:</strong> ${oTyp} &nbsp;|&nbsp; <strong>Datum:</strong> ${datum}</div>
+    <div style="font-size:14px"><strong>Räume:</strong> ${state.raeume.length}</div>
+  `;
+
+  // Show all gewerk summaries for print
+  const origGewerk = state.aktGewerk;
+  let allHtml = '';
+  GEWERKE.forEach(gw => {
+    state.aktGewerk = gw.id;
+    const allePos = getAllePos();
+    const raeumeMitDaten = state.raeume.filter(r =>
+      allePos.some(p => getPosData(r, gw.id, p.id).aktiv)
+    );
+    if (raeumeMitDaten.length === 0) return;
+
+    // Gesamtsummen pro Position für dieses Gewerk
+    const pdfPosGesamt = {};
+    allePos.forEach(p => { pdfPosGesamt[p.id] = {label:p.label, einheit:p.einheit, summe:0, abzug:!!p.abzug}; });
+
+    let gewerkHtml = '<div style="margin-top:20px;page-break-inside:avoid">'
+      + '<div style="font-size:16px;font-weight:900;padding:8px 0;border-bottom:2px solid #333;margin-bottom:8px">' + gw.icon + ' ' + gw.label + '</div>';
+
+    raeumeMitDaten.forEach(r => {
+      const aktPos = allePos.filter(p => getPosData(r, gw.id, p.id).aktiv);
+      gewerkHtml += '<div style="margin-bottom:10px;page-break-inside:avoid">'
+        + '<div style="font-weight:700;font-size:14px;padding:6px 8px;background:#f5f5f5;border-radius:4px;margin-bottom:2px">' + r + '</div>';
+      aktPos.forEach(p => {
+        const felder = getPosData(r, gw.id, p.id).felder||{};
+        const w = calcWert(p, felder);
+        pdfPosGesamt[p.id].summe += w;
+        const umfang = (p.calcTyp==='flaeche'||p.calcTyp==='laengehoehe') ? calcUmfang(p,felder) : null;
+        const prefix = p.abzug ? '− ' : '';
+        const col = p.abzug ? '#cc0000' : '#000';
+        gewerkHtml += '<div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:13px;border-bottom:1px solid #eee">'
+          + '<span style="color:' + col + '">' + prefix + p.label + '</span>'
+          + '<span style="font-weight:700;color:' + col + '">' + prefix + fmtNum(w) + ' ' + p.einheit
+          + (umfang&&umfang>0 ? ' | Umfang: ' + fmtNum(umfang) + ' m' : '') + '</span>'
+          + '</div>';
+      });
+      const notiz = state.notizen[r+'_'+gw.id];
+      if (notiz) gewerkHtml += '<div style="padding:4px 8px;font-size:12px;color:#666;font-style:italic">📝 ' + notiz + '</div>';
+      const fotosPDF = state.fotos[r]||[];
+      if (fotosPDF.length > 0) {
+        gewerkHtml += '<div style="display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px">';
+        fotosPDF.forEach(src => { gewerkHtml += '<img src="' + src + '" style="width:80px;height:80px;object-fit:cover;border-radius:4px">'; });
+        gewerkHtml += '</div>';
+      }
+      gewerkHtml += '</div>';
+    });
+
+    // Gesamtübersicht pro Position
+    const aktPdfPos = Object.values(pdfPosGesamt).filter(p => p.summe > 0);
+    if (aktPdfPos.length > 0) {
+      gewerkHtml += '<div style="margin-top:10px;border:1px solid #ccc;border-radius:6px;overflow:hidden">'
+        + '<div style="background:#333;color:#fff;padding:6px 10px;font-size:13px;font-weight:700">Gesamtübersicht ' + gw.label + '</div>';
+      aktPdfPos.forEach(p => {
+        const col = p.abzug ? '#cc0000' : '#000';
+        const prefix = p.abzug ? '− ' : '';
+        gewerkHtml += '<div style="display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #eee;font-size:13px">'
+          + '<span style="color:' + col + '">' + prefix + p.label + '</span>'
+          + '<span style="font-weight:700;color:' + col + '">' + prefix + fmtNum(p.summe) + ' ' + p.einheit + '</span>'
+          + '</div>';
+      });
+      // Netto pro Einheit
+      const nettoMap = {};
+      aktPdfPos.forEach(p => {
+        if (!nettoMap[p.einheit]) nettoMap[p.einheit] = {brutto:0, abzug:0};
+        if (p.abzug) nettoMap[p.einheit].abzug += p.summe;
+        else         nettoMap[p.einheit].brutto += p.summe;
+      });
+      Object.entries(nettoMap).filter(([e,v]) => v.abzug > 0).forEach(([einheit, v]) => {
+        const netto = v.brutto - v.abzug;
+        gewerkHtml += '<div style="display:flex;justify-content:space-between;padding:6px 10px;background:#f0f0f0;font-size:14px;font-weight:900">'
+          + '<span>= Netto gesamt (' + einheit + ') <span style="font-size:11px;font-weight:400">(nach Abzug)</span></span>'
+          + '<span>' + fmtNum(netto) + ' ' + einheit + '</span>'
+          + '</div>';
+      });
+      gewerkHtml += '</div>';
+    }
+
+    gewerkHtml += '</div>';
+    allHtml += gewerkHtml;
+  });
+  state.aktGewerk = origGewerk;
+
+  // Build print window
+  const win = window.open('','_blank');
+  if (!win) { alert('Bitte Popups erlauben!'); return; }
+  const html = '<!DOCTYPE html><html><head>'
+    + '<meta charset="UTF-8">'
+    + '<title>Aufmass ' + k + '</title>'
+    + '<style>'
+    + '*{box-sizing:border-box;margin:0;padding:0}'
+    + 'body{font-family:Arial,sans-serif;padding:20px;color:#000;font-size:13px}'
+    + 'h1{font-size:22px;font-weight:900;margin-bottom:8px}'
+    + '.info{margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #333}'
+    + '.info div{font-size:14px;margin-top:4px}'
+    + '.gewerk-titel{font-size:16px;font-weight:900;padding:8px 0;border-bottom:2px solid #333;margin:20px 0 8px}'
+    + '.raum-titel{font-weight:700;font-size:14px;padding:6px 8px;background:#f5f5f5;border-radius:4px;margin-bottom:4px}'
+    + '.pos-row{display:flex;justify-content:space-between;padding:4px 8px;font-size:13px;border-bottom:1px solid #eee}'
+    + '.notiz{padding:4px 8px;font-size:12px;color:#666;font-style:italic}'
+    + '.gesamt{display:flex;justify-content:space-between;padding:8px;background:#f0f0f0;border-radius:6px;font-weight:900;font-size:15px;margin-top:8px}'
+        + '@media print{button{display:none}}'
+    + '</style></head><body>'
+    + '<h1>&#128208; AufmassPro</h1>'
+    + '<div class="info">'
+    + '<div><strong>Kunde:</strong> ' + k + '</div>'
+    + '<div><strong>Adresse:</strong> ' + a + '</div>'
+    + '<div><strong>Objekttyp:</strong> ' + oTyp + ' | <strong>Datum:</strong> ' + datum + '</div>'
+    + '<div><strong>Raeume:</strong> ' + state.raeume.length + '</div>'
+    + '</div>'
+    + allHtml
+    + '<br><button onclick="window.print()" style="margin-top:16px;padding:12px 24px;background:#000;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">&#128424;&#65039; PDF speichern / Drucken</button>'
+    + '</body></html>';
+  win.document.write(html);
+  win.document.close();
+}
+
+
+// ── Fotos ──────────────────────────────────────────────────────────────────
+function fotoAufnehmen() { document.getElementById('foto-kamera').click(); }
+function fotoGalerie()   { document.getElementById('foto-input').click(); }
+
+function fotoLaden(event) {
+  const files = event.target.files;
+  if (!files || files.length === 0) return;
+  const raum = state.aktiverRaum;
+  if (!raum) return;
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      if (!state.fotos[raum]) state.fotos[raum] = [];
+      state.fotos[raum].push(e.target.result);
+      renderFotoGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+
+function renderFotoGrid() {
+  const raum = state.aktiverRaum;
+  const grid = document.getElementById('foto-grid');
+  if (!grid || !raum) return;
+  const fotos = state.fotos[raum] || [];
+  grid.innerHTML = fotos.map((src, i) => `
+    <div class="foto-wrap">
+      <img class="foto-thumb" src="${src}" onclick="openLightbox('${raum}',${i})" alt="Foto ${i+1}">
+      <button class="foto-del" onclick="fotoLoeschen('${raum}',${i})">✕</button>
+    </div>`).join('');
+}
+
+function fotoLoeschen(raum, idx) {
+  if (!state.fotos[raum]) return;
+  state.fotos[raum].splice(idx, 1);
+  renderFotoGrid();
+}
+
+function openLightbox(raum, idx) {
+  const src = (state.fotos[raum]||[])[idx];
+  if (!src) return;
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+
+// ── Positions-Notiz speichern ─────────────────────────────────────────────
+function savePosNotiz(inp, raum, posId) {
+  const data = getPosData(raum, state.aktGewerk, posId);
+  if (!data.felder) data.felder = {};
+  data.felder['_notiz'] = inp.value;
+  setPosData(raum, state.aktGewerk, posId, data);
+}
+
+// ── Werte-Übernahme zwischen Gewerken ──────────────────────────────────────
+// Mapping: Welche Position kann Werte von welcher anderen Position übernehmen?
+const UEBERNAHME_MAP = {
+  // Maler: Decke streichen ← Trockenbau: Abgehängte Decke ODER Trockenbau: Wandfläche
+  maler: {
+    deckeMaler: [{gewerk:'trockenbau', posId:'decke',       label:'Trockenbau: Abgehängte Decke'},
+                 {gewerk:'boden',      posId:'estrich',      label:'Boden: Estrichfläche'}],
+    wandMaler:  [{gewerk:'trockenbau', posId:'wandflaeche',  label:'Trockenbau: Wandfläche'},
+                 {gewerk:'trockenbau', posId:'trennwand',    label:'Trockenbau: Trennwand'}],
+    tapete:     [{gewerk:'trockenbau', posId:'wandflaeche',  label:'Trockenbau: Wandfläche'}],
+    spachtel:      [{gewerk:'trockenbau', posId:'wandflaeche',  label:'Trockenbau: Wandfläche'},
+                    {gewerk:'trockenbau', posId:'trennwand',    label:'Trockenbau: Trennwand'}],
+    spachtelDecke: [{gewerk:'trockenbau', posId:'decke',        label:'Trockenbau: Abgehängte Decke'}],
+  },
+  fliesen: {
+    bodenFl:    [{gewerk:'boden',      posId:'flaeche',      label:'Boden: Bodenfläche'},
+                 {gewerk:'trockenbau', posId:'decke',        label:'Trockenbau: Abgehängte Decke'}],
+  },
+  boden: {
+    flaeche:    [{gewerk:'fliesen',    posId:'bodenFl',      label:'Fliesen: Bodenfliesen'},
+                 {gewerk:'trockenbau', posId:'decke',        label:'Trockenbau: Abgehängte Decke'}],
+    estrich:    [{gewerk:'fliesen',    posId:'bodenFl',      label:'Fliesen: Bodenfliesen'}],
+  },
+};
+
+function getUebernahmeQuellen(gewerkId, posId, raum) {
+  const quellen = (UEBERNAHME_MAP[gewerkId]||{})[posId]||[];
+  return quellen.filter(q => {
+    const data = getPosData(raum, q.gewerk, q.posId);
+    return data.aktiv && calcWert(
+      [...(STD_POS[q.gewerk]||[])].find(p=>p.id===q.posId)||{calcTyp:'direkt'},
+      data.felder||{}
+    ) > 0;
+  });
+}
+
+function uebernehmeWert(raum, posId, quelleGewerk, quellePosId) {
+  const quelleData = getPosData(raum, quelleGewerk, quellePosId);
+  const quellePos = (STD_POS[quelleGewerk]||[]).find(p=>p.id===quellePosId);
+  const zielPos   = [...(STD_POS[state.aktGewerk]||[]), ...(state.customPos[state.aktGewerk]||[])].find(p=>p.id===posId);
+  if (!quellePos || !quelleData.aktiv || !zielPos) return;
+
+  const data = getPosData(raum, state.aktGewerk, posId);
+  data.aktiv = true;
+  if (!data.felder) data.felder = {};
+
+  const quelleCalcTyp = quellePos.calcTyp;
+  const zielCalcTyp   = zielPos.calcTyp;
+
+  if (quelleCalcTyp === zielCalcTyp) {
+    // Gleicher Typ → Felder direkt übernehmen
+    data.felder = Object.assign({}, quelleData.felder||{});
+  } else {
+    // Unterschiedliche Typen → berechneten Wert als direkten Wert übernehmen
+    const ct = CALC_TYPEN.find(c=>c.id===quelleCalcTyp)||CALC_TYPEN[2];
+    const wert = quellePos.calcTyp==='flaeche'
+      ? (parseFloat((quelleData.felder||{}).laenge)||0)*(parseFloat((quelleData.felder||{}).breite)||0)
+      : quellePos.calcTyp==='laengehoehe'
+      ? (parseFloat((quelleData.felder||{}).laenge)||0)*(parseFloat((quelleData.felder||{}).hoehe)||0)
+      : parseFloat((quelleData.felder||{}).wert)||0;
+
+    // Wert als String mit Punkt (intern immer Punkt, Komma nur bei Anzeige)
+    const wertStr = String(Math.round(wert * 100) / 100);
+    if (zielCalcTyp === 'direkt') {
+      data.felder = { wert: wertStr };
+    } else if (zielCalcTyp === 'flaeche') {
+      // Quell-Felder direkt übernehmen falls vorhanden, sonst Wert als Länge × 1
+      if (quelleData.felder && quelleData.felder.laenge && quelleData.felder.breite) {
+        data.felder = { laenge: quelleData.felder.laenge, breite: quelleData.felder.breite };
+      } else {
+        data.felder = { laenge: wertStr, breite: '1' };
+      }
+    } else if (zielCalcTyp === 'laengehoehe') {
+      if (quelleData.felder && quelleData.felder.laenge && quelleData.felder.hoehe) {
+        data.felder = { laenge: quelleData.felder.laenge, hoehe: quelleData.felder.hoehe };
+      } else {
+        data.felder = { laenge: wertStr, hoehe: '1' };
+      }
+    }
+  }
+
+  setPosData(raum, state.aktGewerk, posId, data);
+  renderPosListe();
+}
+
+
+
+
+// ── Spracheingabe ──────────────────────────────────────────────────────────
+function startSpracheText(inp) {
+  // Speech input for text fields (like position name)
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) { alert('Spracheingabe nicht verfügbar.'); return; }
+
+  const rec = new SpeechRecognition();
+  rec.lang = 'de-DE';
+  rec.continuous = false;
+  rec.interimResults = false;
+
+  rec.onresult = (e) => {
+    inp.value = e.results[0][0].transcript;
+  };
+  rec.onerror = () => {};
+  rec.start();
+}
+
+// ── Spracheingabe ──────────────────────────────────────────────────────────
+let speechRecognition = null;
+let activeMicBtn = null;
+
+function parseZahl(text) {
+  // Convert German spoken numbers/text to decimal number string
+  let t = text.trim()
+    .replace(/komma/gi, '.')
+    .replace(/punkt/gi, '.')
+    .replace(/,/g, '.')
+    .replace(/\s+/g, '')
+    .replace(/null/gi, '0')
+    .replace(/eins?/gi, '1')
+    .replace(/zwei/gi, '2')
+    .replace(/drei/gi, '3')
+    .replace(/vier/gi, '4')
+    .replace(/fuenf|fünf/gi, '5')
+    .replace(/sechs/gi, '6')
+    .replace(/sieben/gi, '7')
+    .replace(/acht/gi, '8')
+    .replace(/neun/gi, '9');
+  const match = t.match(/\d+([.,]\d+)?/);
+  return match ? match[0].replace(',', '.') : null;
+}
+
+function startSprachePro(btn) {
+  if (btn.classList.contains('listening')) {
+    stopSprache();
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('Spracheingabe nicht verfügbar. Bitte Chrome verwenden.');
+    return;
+  }
+
+  const feldCount = parseInt(btn.getAttribute('data-count')) || 1;
+  // Find all inputs in the same pos-felder container
+  const container = btn.closest('.pos-felder') || btn.parentElement.parentElement;
+  const inputs = container ? container.querySelectorAll('.sm-inp') : [];
+
+  speechRecognition = new SpeechRecognition();
+  speechRecognition.lang = 'de-DE';
+  speechRecognition.continuous = false;
+  speechRecognition.interimResults = false;
+  speechRecognition.maxAlternatives = 3;
+
+  btn.classList.add('listening');
+  btn.textContent = '🔴';
+  activeMicBtn = btn;
+
+  speechRecognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    console.log('Erkannt:', transcript);
+
+    if (feldCount === 1 || inputs.length <= 1) {
+      // Single field - just parse the number
+      const val = parseZahl(transcript);
+      if (val && inputs[0]) inputs[0].value = val;
+    } else {
+      // Multiple fields - split by "mal", "x", "und", "auf", "durch"
+      const parts = transcript.split(/\s*(mal|durch|auf|und|x|×)\s*/i).filter(p => p.trim() && !/^(mal|durch|auf|und|x|×)$/i.test(p));
+      parts.forEach((part, i) => {
+        if (inputs[i]) {
+          const val = parseZahl(part);
+          if (val) inputs[i].value = val;
+        }
+      });
+    }
+    stopSprache();
+  };
+
+  speechRecognition.onerror = () => stopSprache();
+  speechRecognition.onend = () => stopSprache();
+  speechRecognition.start();
+}
+
+function stopSprache() {
+  if (speechRecognition) {
+    try { speechRecognition.stop(); } catch(e) {}
+    speechRecognition = null;
+  }
+  if (activeMicBtn) {
+    activeMicBtn.classList.remove('listening');
+    activeMicBtn.textContent = '🎤';
+    activeMicBtn = null;
+  }
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+setAccent(GEWERKE[0].color);
+renderNav();
+renderVorlageChips();
+goToOrdner();
+</script>
+
+<script>
+// ── Zurück-Button & Wisch-Geste ─────────────────────────────────────────────
+
+// Navigation history stack
+let navHistory = [];
+
+const _goTo = goTo;
+const _goToOrdner = goToOrdner;
+
+// Override goTo to track history
+function goToWithHistory(n, fromOrdner) {
+  if (state.schritt !== n) {
+    if (state.schritt === 0) navHistory.push('ordner');
+    else navHistory.push(state.schritt);
+  }
+  if (fromOrdner) _goToOrdner();
+  else _goTo(n);
+  updateBackBtn();
+}
+
+function goBack() {
+  if (navHistory.length === 0) return;
+  const prev = navHistory.pop();
+  if (prev === 'ordner') _goToOrdner();
+  else _goTo(prev);
+  updateBackBtn();
+}
+
+function updateBackBtn() {
+  const btn = document.getElementById('back-fab');
+  if (!btn) return;
+  btn.style.display = navHistory.length > 0 ? 'flex' : 'none';
+}
+
+// Swipe right to go back
+let touchStartX = 0;
+let touchStartY = 0;
+document.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  const screenW = window.innerWidth;
+  // Wisch nach rechts vom linken Rand (< 60px) ODER vom rechten Rand (> screenW-60px)
+  const vonLinksRand  = touchStartX < 60  && dx >  80;
+  const vonRechtsRand = touchStartX > screenW - 60 && dx < -80;
+  if ((vonLinksRand || vonRechtsRand) && Math.abs(dy) < 80) {
+    goBack();
+  }
+}, {passive: true});
+
+// Override navigation buttons to use history
+window.addEventListener('DOMContentLoaded', function() {
+  // Patch all goTo calls to track history via intercept
+  // We do this by wrapping the existing goTo
+  const origGoTo = goTo;
+  const origGoToOrdner = goToOrdner;
+
+  window.goTo = function(n) {
+    if (state.schritt !== undefined && state.schritt !== n) {
+      navHistory.push(state.schritt === 0 ? 'ordner' : state.schritt);
+    }
+    origGoTo(n);
+    updateBackBtn();
+  };
+
+  window.goToOrdner = function() {
+    if (state.schritt !== undefined) {
+      navHistory.push(state.schritt === 0 ? 'ordner' : state.schritt);
+    }
+    origGoToOrdner();
+    updateBackBtn();
+  };
+
+  // Reset history on ordner
+  const origReset = resetApp;
+  window.resetApp = function() {
+    navHistory = [];
+    origReset();
+    updateBackBtn();
+  };
+});
+</script>
+
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+  <button id="lightbox-close" onclick="closeLightbox()">✕ Schließen</button>
+</div>
+
+<!-- Zurück FAB Button -->
+<button id="back-fab" onclick="goBack()"
+  style="display:none;position:fixed;bottom:90px;left:16px;z-index:300;
+    width:48px;height:48px;border-radius:50%;border:none;
+    background:#222537;color:#dde2ec;font-size:20px;
+    align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 4px 16px rgba(0,0,0,.5)">
+  ←
+</button>
+</body>
+</html>
